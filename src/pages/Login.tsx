@@ -1,10 +1,10 @@
-import React from "react";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import './Login.css'
 
-//user input that is submitted from login
+//user input submitted from login
 type LoginFormInputs = {
     email: string;
     password: string;
@@ -17,50 +17,49 @@ type UserData = {
     password: string;
 }
 
-function Login(): React.ReactElement {
+export default function Login() {
 
-    const navigate = useNavigate();
+    const navigate = useNavigate(); //routing
+    const [loginError, setLoginError] = useState("");
 
+    //create form and track input data upon submission
     const {
         register, //connection to React Hook
         handleSubmit, //check for valid inputs
         formState: { errors }, //display error messages
-    } = useForm<LoginFormInputs>({mode: "onSubmit",}); //create form and track input data upon submission
+    } = useForm<LoginFormInputs>({mode: "onSubmit",});
 
-    const onSubmit: SubmitHandler<LoginFormInputs> = (data) => { //submission variable that captures user input {email, password}
-        const userDataString = localStorage.getItem(data.email); //browser storage
 
-        //if email exists, convert from json to js
-        if (userDataString) {
-            const userData: UserData = JSON.parse(userDataString); //browser or local storage only stores json strings "baileygmail.com": '{"name":"Bailey","password":"beepbeep"}'
+    //capture input
+    const onSubmit: SubmitHandler<LoginFormInputs> = (data) => {
+        const userEmail = localStorage.getItem(data.email);
+        
+        if (userEmail) {
+            const userData: UserData = JSON.parse(userEmail);
             
-            //verfiy if input password matches db
             if (userData.password === data.password) {
-                console.log(userData.username + "Login is successful");
+                setLoginError("");
                 navigate("/home");
             } 
             else {
-                console.log("Login not successful. Email or Password is wrong.");
-                //future implementation: add banner to indicate incorrect credentials
+                setLoginError("Email or password is incorrect.");
             }
-        }
-        //no email exists, so login doesn't go through
+        } 
         else {
-            console.log("Login not successful. Email or Password is wrong.");
-            //future implementation: add banner to indicate incorrect credentials
+            setLoginError("Email or password is incorrect.");
         }
-    };
+    }   
 
     return (
         <>
             <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
                 <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-                    <img alt="Stable Route logo" src="src/assets/earth.png" className="mx-auto h-10 w-auto"/>
-                    <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-black">Welcome to Stable Route</h2>
+                    <img alt="Stable Route logo" src="src/assets/earth.png" className="mx-auto h-25 w-auto"/>
+                    <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-">Welcome to Stable Route</h2>
                 </div>
 
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6"> { /*check for valid inputs*/}
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
                         { /* Email input box */}
                         <div>
@@ -70,9 +69,9 @@ function Login(): React.ReactElement {
                                     id="email"
                                     type="email"
                                     placeholder="Enter your email"
-                                    {...register("email", { required: true })} //include input email in React Hook
+                                    {...register("email", { required: true })}
                                     autoComplete="email"
-                                    className="block w-full rounded-md border-2 border-gray-300 bg-white px-3 py-1.5 text-base text-black placeholder:text-black-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                                    className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-black-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6"
                                 />
                                 {errors.email && <span className="text-red-500 text-sm">Please enter your email</span>}
                             </div>
@@ -83,7 +82,6 @@ function Login(): React.ReactElement {
                             <div className="flex items-center justify-between">
                                 <label htmlFor="password" className="block text-sm/6 font-medium text-black">Password</label>
                                 <div className="text-sm">
-                                    { /* <a href="#" className="font-semibold text-black-300 hover:text-red-300">Forgot password?</a> */ }
                                 </div>
                             </div>
                             <div className="mt-2">
@@ -92,16 +90,20 @@ function Login(): React.ReactElement {
                                     type="password"
                                     placeholder="Enter your password"
                                     {...register("password", { required: true })}
+                                    onChange={() => setLoginError("")} //clear error message when user types again
                                     autoComplete="current-password"
-                                    className="block w-full rounded-md border-2 border-gray-300 bg-white px-3 py-1.5 text-base text-black placeholder:text-black-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                                    className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-black-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6"
                                 />
-                                {errors.password && <span className="text-red-500 text-sm">Please enter your password</span>}
+                                { /* Password error exists - lacks input */}
+                                {errors.password ? (<span className="text-red-500 text-sm">Please enter your password</span>) : null}
+
+                                { /* Password error doesn't exist - has input but email doesn't exist or password doesn't match */}
+                                {!errors.password && loginError ? (<span className="text-red-500 text-sm">{loginError}</span>) : null}
                             </div>
                         </div>
 
                         { /* Sign In button */}
                         <div className="flex justify-center">
-                            {/*width, shape, hor/vert padding, textsize, textfont, hover, non-mouse inputs*/}
                             <button type="submit"
                                 className="
                                 w-35 
@@ -113,7 +115,7 @@ function Login(): React.ReactElement {
                                 text-white hover:bg-blue-400 
                                 focus-visible:outline-2 
                                 focus-visible:outline-offset-2 
-                                focus-visible:outline-indigo-500">
+                                focus-visible:outline-blue-500">
                                 Sign In
                             </button>
                         </div>
@@ -129,5 +131,3 @@ function Login(): React.ReactElement {
         </>
     );
 }
-
-export default Login;
