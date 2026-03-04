@@ -5,7 +5,7 @@ import { useState } from "react";
 import './Signup.css'
 
 //user input submitted from signup
-interface SignupFormInputs {
+type SignupFormInputs = {
     email: string;
     username: string;
     password: string;
@@ -13,7 +13,7 @@ interface SignupFormInputs {
 }
 
 //user input stored in db from signup
-interface UserData {
+type UserData = {
     email: string;
     username: string;
     password: string;
@@ -75,7 +75,7 @@ export default function Signup() {
                                     autoComplete="email"
                                     className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6"
                                 />
-                                {errors.email ? (<span className="text-red-500 text-sm">Please enter your email</span>) : null}
+                                {errors.email ? (<span className="text-red-500 text-sm">Please enter your email.</span>) : null}
                                 {!errors.email && emailError? (<span className="text-red-500 text-sm">{emailError}</span>) : null}
                             </div>
                         </div>
@@ -93,7 +93,7 @@ export default function Signup() {
                                     autoComplete="username"
                                     className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6"
                                 />
-                                {errors.username ? (<span className="text-red-500 text-sm">Please enter your username</span>) : null}
+                                {errors.username ? (<span className="text-red-500 text-sm">Please enter your username.</span>) : null}
                                 {!errors.username && usernameError? (<span className="text-red-500 text-sm">{usernameError}</span>) : null}
                             </div>
                         </div>
@@ -110,7 +110,7 @@ export default function Signup() {
                                     autoComplete="current-password"
                                     className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-bluego-500 sm:text-sm/6"
                                 />
-                                {errors.password ? (<span className="text-red-500 text-sm">Please enter your password</span>) : null}
+                                {errors.password ? (<span className="text-red-500 text-sm">Please enter your password.</span>) : null}
                             </div>
                         </div>
 
@@ -126,7 +126,7 @@ export default function Signup() {
                                     autoComplete="current-password"
                                     className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-bluego-500 sm:text-sm/6"
                                 />
-                                {errors.passwordConfirmation ? (<span className="text-red-500 text-sm">Please enter your password again</span>) : null}
+                                {errors.passwordConfirmation ? (<span className="text-red-500 text-sm">Please enter your password again.</span>) : null}
                             </div>
                         </div>
 
@@ -146,7 +146,6 @@ export default function Signup() {
                                 focus-visible:outline-bluego-500">
                                 Create Account
                             </button>
-                            
                         </div>
                     </form>
                     

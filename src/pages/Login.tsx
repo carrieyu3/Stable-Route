@@ -24,11 +24,10 @@ export default function Login() {
 
     //create form and track input data upon submission
     const {
-        register, //connection to React Hook
-        handleSubmit, //check for valid inputs
-        formState: { errors }, //display error messages
+        register,
+        handleSubmit,
+        formState: { errors },
     } = useForm<LoginFormInputs>({mode: "onSubmit",});
-
 
     //capture input
     const onSubmit: SubmitHandler<LoginFormInputs> = (data) => {
@@ -73,7 +72,8 @@ export default function Login() {
                                     autoComplete="email"
                                     className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-black-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6"
                                 />
-                                {errors.email && <span className="text-red-500 text-sm">Please enter your email</span>}
+                                { /* Lacks input - email error */}
+                                {errors.email && <span className="text-red-500 text-sm">Please enter your email.</span>}
                             </div>
                         </div>
                         
@@ -94,10 +94,7 @@ export default function Login() {
                                     autoComplete="current-password"
                                     className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-black-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6"
                                 />
-                                { /* Password error exists - lacks input */}
-                                {errors.password ? (<span className="text-red-500 text-sm">Please enter your password</span>) : null}
-
-                                { /* Password error doesn't exist - has input but email doesn't exist or password doesn't match */}
+                                {errors.password ? (<span className="text-red-500 text-sm">Please enter your password.</span>) : null}
                                 {!errors.password && loginError ? (<span className="text-red-500 text-sm">{loginError}</span>) : null}
                             </div>
                         </div>
