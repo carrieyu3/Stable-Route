@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { supabase } from "../lib/supabase";
 import './Signup.css'
 
 //user input submitted from signup
@@ -10,13 +11,6 @@ type SignupFormInputs = {
     username: string;
     password: string;
     passwordConfirmation: string;
-}
-
-//user input stored in db from signup
-type UserData = {
-    email: string;
-    username: string;
-    password: string;
 }
 
 export default function Signup() {
@@ -33,20 +27,22 @@ export default function Signup() {
     } = useForm<SignupFormInputs>({mode: "onSubmit",});
 
     //capture user input
-    const onSubmit: SubmitHandler<SignupFormInputs> = (data) => {
-        const existingEmail = localStorage.getItem(data.email);
-        
-        if (existingEmail) {
-             setEmailError("Email already exists.");
-        }
-        else {
-            const newUser: UserData = {
-                email: data.email,
-                username: data.username,
-                password: data.password
-            };
+    const onSubmit: SubmitHandler<SignupFormInputs> = async (data) => {
 
-            localStorage.setItem(data.email, JSON.stringify(newUser));
+        if (data.password !== data.passwordConfirmation) {
+            setUsernameError("Passwords do not match.");
+            return;
+        }
+
+        const { error } = await supabase.auth.signUp({
+            email: data.email,
+            password: data.password,
+        });
+
+        if (error) {
+            setEmailError(error.message);
+        } 
+        else {
             navigate("/");
         }
     };
@@ -108,7 +104,7 @@ export default function Signup() {
                                     placeholder="Enter your password"
                                     {...register("password", { required: true })} 
                                     autoComplete="current-password"
-                                    className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-bluego-500 sm:text-sm/6"
+                                    className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6"
                                 />
                                 {errors.password ? (<span className="text-red-500 text-sm">Please enter your password.</span>) : null}
                             </div>
@@ -124,7 +120,7 @@ export default function Signup() {
                                     placeholder="Enter your password again"
                                     {...register("passwordConfirmation", { required: true })}
                                     autoComplete="current-password"
-                                    className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-bluego-500 sm:text-sm/6"
+                                    className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6"
                                 />
                                 {errors.passwordConfirmation ? (<span className="text-red-500 text-sm">Please enter your password again.</span>) : null}
                             </div>
