@@ -1,0 +1,8 @@
+
+# Files to ignore as they are too big for github
+
+graph.obj
+
+new-york_new-york.osm.pbf
+
+otp-shaded-2.8.1.jar
