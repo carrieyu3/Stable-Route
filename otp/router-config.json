@@ -11,9 +11,6 @@
             "escalator": {
                 "reluctance": 1
             }
-        },
-        "wheelchairAccessibility":{
-            "enabled": true
         }
     }
 }
