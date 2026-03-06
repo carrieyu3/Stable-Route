@@ -1,0 +1,11 @@
+{
+    "transitModelTimeZone":"America/New_York",
+    "gtfsDefaults": {
+        "discardMinTransferTimes": true,
+        "stationTransferPreference": "recommended" 
+    },
+    "osmDefaults": {
+        "includeOsmSubwayEntrances": true,
+        "timeZone": "America/New_York"
+    }
+}

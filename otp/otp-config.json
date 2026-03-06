@@ -1,0 +1,9 @@
+{
+    "otpFeatures": {
+        "IncludeEmptyRailStopsInTransfers": true,
+        "ConsiderPatternsForDirectTransfers": true,
+        "ExtraTransferLegOnSameStop": false,
+        "ParallelRouting": true,
+        "RealtimeResolver": true
+    }
+}
