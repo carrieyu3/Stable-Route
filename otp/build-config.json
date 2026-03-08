@@ -18,5 +18,12 @@
         "enabled": true
       }
     }
+  ],
+  "transitFeeds": [
+    {
+      "type": "gtfs",
+      "feedId": "bus_b",
+      "source": "gtfs_b.zip"
+    }
   ]
 }
