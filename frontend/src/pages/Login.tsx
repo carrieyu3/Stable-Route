@@ -36,7 +36,8 @@ export default function Login() {
         } 
         else {
             setLoginError("");
-            navigate("/home");
+            //navigate("/home");
+            navigate("/preference"); //for testing if login data transfers
         }
     }   
 
