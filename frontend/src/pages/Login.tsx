@@ -2,18 +2,12 @@ import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { supabase } from "../lib/supabase";
 import './Login.css'
 
 //user input submitted from login
 type LoginFormInputs = {
     email: string;
-    password: string;
-}
-
-//user input stored in db from signup
-type UserData = {
-    email: string;
-    username: string;
     password: string;
 }
 
@@ -30,22 +24,20 @@ export default function Login() {
     } = useForm<LoginFormInputs>({mode: "onSubmit",});
 
     //capture input
-    const onSubmit: SubmitHandler<LoginFormInputs> = (data) => {
-        const userEmail = localStorage.getItem(data.email);
+    const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
         
-        if (userEmail) {
-            const userData: UserData = JSON.parse(userEmail);
-            
-            if (userData.password === data.password) {
-                setLoginError("");
-                navigate("/home");
-            } 
-            else {
-                setLoginError("Email or password is incorrect.");
-            }
+        const { error } = await supabase.auth.signInWithPassword({
+            email: data.email,
+            password: data.password,
+        });
+
+        if (error) {
+            setLoginError("Email or password is incorrect.");
         } 
         else {
-            setLoginError("Email or password is incorrect.");
+            setLoginError("");
+            //navigate("/home");
+            navigate("/preference"); //for testing if login data transfers
         }
     }   
 
