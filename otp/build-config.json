@@ -22,8 +22,38 @@
   "transitFeeds": [
     {
       "type": "gtfs",
+      "feedId": "subway",
+      "source": "gtfs_subway.zip"
+    },
+    {
+      "type": "gtfs",
       "feedId": "bus_b",
       "source": "gtfs_b.zip"
+    },
+    {
+      "type": "gtfs",
+      "feedId": "bus_busco",
+      "source": "gtfs_busco.zip"
+    },
+    {
+      "type": "gtfs",
+      "feedId": "bus_bx",
+      "source": "gtfs_bx.zip"
+    },
+    {
+      "type": "gtfs",
+      "feedId": "bus_m",
+      "source": "gtfs_m.zip"
+    },
+        {
+      "type": "gtfs",
+      "feedId": "bus_q",
+      "source": "gtfs_q.zip"
+    },
+    {
+      "type": "gtfs",
+      "feedId": "bus_si",
+      "source": "gtfs_si.zip"
     }
   ]
 }
