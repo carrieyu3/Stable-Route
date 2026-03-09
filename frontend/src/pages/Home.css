@@ -1,0 +1,14 @@
+/*
+body {
+    background-color: #e4dbcf;
+}
+*/
+
+body {
+    background: none;
+    background-image: none !important;
+}
+
+.main-content{
+  padding: 0px !important;
+}
