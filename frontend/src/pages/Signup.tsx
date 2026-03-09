@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { supabase } from "../lib/supabase";
 import './Signup.css'
 
 //user input submitted from signup
@@ -12,42 +13,85 @@ type SignupFormInputs = {
     passwordConfirmation: string;
 }
 
-//user input stored in db from signup
-type UserData = {
-    email: string;
-    username: string;
-    password: string;
-}
-
 export default function Signup() {
 
     const navigate = useNavigate(); //routing
     const [emailError, setEmailError] = useState("");
     const [usernameError, setUsernameError] = useState("");
+    const [passwordError, setPasswordError] = useState("");
+    const [passwordConfirmationError, setPasswordConfirmationError] = useState("");
 
     //create form and track input data upon submission
     const {
         register,
         handleSubmit,
         formState: { errors },
+        clearErrors,
     } = useForm<SignupFormInputs>({mode: "onSubmit",});
+    
+    //auth errors - override supabase default messages
+    const displayAuthErrors = (error: any) => {
+        if (error.message.includes("User already registered")) {
+            setEmailError("Email already exists.");
+        } 
+        else if (error.message.includes("Password should be at least 6 characters")) {
+            setPasswordError(error.message); //print under password, not email
+        } 
+    };
 
-    //capture user input
-    const onSubmit: SubmitHandler<SignupFormInputs> = (data) => {
-        const existingEmail = localStorage.getItem(data.email);
-        
-        if (existingEmail) {
-             setEmailError("Email already exists.");
+    //database errors - override supabase default message
+    const displayDatabaseErrors = (error: any) => {
+        if (error.message.includes("duplicate")) {
+            setUsernameError("Username already exists.");
         }
-        else {
-            const newUser: UserData = {
-                email: data.email,
-                username: data.username,
-                password: data.password
-            };
+    };
 
-            localStorage.setItem(data.email, JSON.stringify(newUser));
-            navigate("/");
+    //Capture user input and begin Signup validation
+    const onSubmit: SubmitHandler<SignupFormInputs> = async (data) => {
+
+        if (data.password !== data.passwordConfirmation) {
+            setPasswordConfirmationError("Passwords do not match.");
+            return; //prevent rest of signup process
+        }
+
+        //query through User db for existing username
+        const { data: existingUser } = await supabase
+            .from('User')
+            .select('user_username')
+            .ilike('user_username', data.username) //disregard case-sensitive chars
+            .single();
+
+        //if a dupe is found, do not store data in Auth with a different email
+        if (existingUser) {
+            setUsernameError("Username already exists.");
+            return;
+        }
+
+        //otherwise, create account and store data in Auth after signup
+        const { data: authData, error: signupError } = await supabase.auth.signUp({
+            email: data.email,
+            password: data.password,
+        });
+
+        if (signupError) {
+            displayAuthErrors(signupError);
+        }
+        //after auth, store data in User table
+        else if (authData.user) {
+            const { error: databaseError } = await supabase
+                .from('User')
+                .insert([{ 
+                    user_id: authData.user.id, 
+                    user_username: data.username.toLowerCase(),
+                    user_email: data.email.toLowerCase() 
+                }]);
+
+            if (databaseError) {
+                displayDatabaseErrors(databaseError);
+            }
+            else {
+                navigate("/"); //route to home page
+            }     
         }
     };
 
@@ -71,7 +115,9 @@ export default function Signup() {
                                     type="email"
                                     placeholder="Enter your email"
                                     {...register("email", { required: true })}
-                                    onChange={() => setEmailError("")}
+                                    onChange={() => {
+                                        setEmailError(""); 
+                                        clearErrors("email"); }}
                                     autoComplete="email"
                                     className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6"
                                 />
@@ -89,7 +135,9 @@ export default function Signup() {
                                     type="text"
                                     placeholder="Enter your username"
                                     {...register("username", { required: true })}
-                                    onChange={() => setUsernameError("")}
+                                    onChange={() => {
+                                        setUsernameError(""); 
+                                        clearErrors("username"); }}
                                     autoComplete="username"
                                     className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6"
                                 />
@@ -106,11 +154,15 @@ export default function Signup() {
                                     id="password"
                                     type="password"
                                     placeholder="Enter your password"
-                                    {...register("password", { required: true })} 
+                                    {...register("password", { required: true })}
+                                    onChange={() => {
+                                        setPasswordError(""); 
+                                        clearErrors("password"); }}
                                     autoComplete="current-password"
-                                    className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-bluego-500 sm:text-sm/6"
+                                    className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6"
                                 />
                                 {errors.password ? (<span className="text-red-500 text-sm">Please enter your password.</span>) : null}
+                                {!errors.password && passwordError? (<span className="text-red-500 text-sm">{passwordError}</span>) : null}
                             </div>
                         </div>
 
@@ -123,10 +175,14 @@ export default function Signup() {
                                     type="password"
                                     placeholder="Enter your password again"
                                     {...register("passwordConfirmation", { required: true })}
+                                    onChange={() => {
+                                        setPasswordConfirmationError(""); 
+                                        clearErrors("passwordConfirmation"); }}
                                     autoComplete="current-password"
-                                    className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-bluego-500 sm:text-sm/6"
+                                    className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6"
                                 />
                                 {errors.passwordConfirmation ? (<span className="text-red-500 text-sm">Please enter your password again.</span>) : null}
+                                {!errors.passwordConfirmation && passwordConfirmationError ? (<span className="text-red-500 text-sm">{passwordConfirmationError}</span>) : null}
                             </div>
                         </div>
 

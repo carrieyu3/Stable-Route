@@ -11,9 +11,16 @@
             "escalator": {
                 "reluctance": 1
             }
-        },
-        "wheelchairAccessibility":{
-            "enabled": true
         }
-    }
+    },
+    "updaters": [
+        {
+            "type" : "stop-time-updater",
+            "frequency" : "1m",
+            "backwardsDelayPropagationType": "required-no-data",
+            "fuzzyTripMatching": true,
+            "feedId" : "subway",
+            "url": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-bdfm"
+        }
+    ]
 }

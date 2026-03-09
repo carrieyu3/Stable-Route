@@ -1,16 +1,16 @@
 # Stable-Route
 
-A web app that prioritizes accessibility in the NYC transit system and is designed to find an efficient route for travel for those who are unable to use stairs for any reason. Generally for anyone who faces difficulties in using stairs while navigating NYC transit, as an individual who is wheel chair bounded.
+A web app that prioritizes accessibility in the NYC transit system and is designed to find an efficient route for travel. Generally, this would be for people are unable to use stairs for any reason or face difficulties with navigation, including but not limited to those with disabilities or reduced mobility and visual impairment. 
 
 
 ## Finding Routes
 
-Using OpenTripPlanner to create this routes based on user's perferences and MTA's GTFS to get accurate Subway and Bus schedules. 
+Using OpenTripPlanner to create routes based on user preferences and MTA's GTFS to obtain accurate Subway and Bus schedules. 
 
 ### Technologies
 
-Frontend: React + Vite + Typescript
+Frontend: React + Vite + TypeScript + Tailwind CSS
 
-Backend: ExpressJS + Typescript, OpenTripPlanner
+Backend: ExpressJS + TypeScript, OpenTripPlanner
 
-Database: PostgreSQL (GIS) + SupaBase
+Database: PostgreSQL (GIS) + Supabase
