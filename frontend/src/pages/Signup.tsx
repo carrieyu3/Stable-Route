@@ -14,7 +14,7 @@ type SignupFormInputs = {
 }
 
 export default function Signup() {
-
+    
     const navigate = useNavigate(); //routing
     const [emailError, setEmailError] = useState("");
     const [usernameError, setUsernameError] = useState("");
@@ -56,7 +56,7 @@ export default function Signup() {
 
         //query through User db for existing username
         const { data: existingUser } = await supabase
-            .from('User')
+            .from('user_auth_test') //switch to User for official db
             .select('user_username')
             .ilike('user_username', data.username) //disregard case-sensitive chars
             .single();
@@ -79,7 +79,7 @@ export default function Signup() {
         //after auth, store data in User table
         else if (authData.user) {
             const { error: databaseError } = await supabase
-                .from('User')
+                .from('user_auth_test') //switch to User for official db
                 .insert([{ 
                     user_id: authData.user.id, 
                     user_username: data.username.toLowerCase(),

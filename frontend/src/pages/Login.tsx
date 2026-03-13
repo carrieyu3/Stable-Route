@@ -12,7 +12,7 @@ type LoginFormInputs = {
 }
 
 export default function Login() {
-
+    
     const navigate = useNavigate(); //routing
     const [loginError, setLoginError] = useState("");
 
