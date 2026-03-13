@@ -7,7 +7,6 @@ import { postRoute } from './routes-queries.ts'
 
 
 router.post('/test', async (req,res) => {
-    console.log("handler")
     await getRoute("asd", "asd", "asd")
     res.send("checking test")
 })
