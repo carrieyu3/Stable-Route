@@ -4,10 +4,12 @@ body {
 }
 */
 
+/* commenting out for now
 body {
     background: none;
     background-image: none !important;
 }
+*/
 
 .main-content{
   padding: 0px !important;
