@@ -1,11 +1,22 @@
 import {graphql_url, query} from './routes-variables.ts'
 
+function getCoords(location: any){
+  const lat = location["latitude"]
+  const long = location["longitude"]
+  return {lat,long}
+}
+function getQueryVariables(extra:any){
+  const transportModes_Arr = extra["transportModes"]
+  const numOfTrips = extra["numTripPatterns"]
+  return {transportModes_Arr, numOfTrips}
+}
 
-    
 
-
-export async function getRoute(origin, destination, extra){
-  const data = await fetch(graphql_url, {
+export async function getRoute(origin:any, destination:any, extra:any){
+  const {lat:origin_lat, long:origin_long} = getCoords(origin)
+  const {lat: destination_lat, long: destination_long} = getCoords(destination)
+  const {transportModes_Arr, numOfTrips} = getQueryVariables(extra)
+  const response = await fetch(graphql_url, {
     method: "POST",
     headers: {
       'Content-Type': 'application/json',
@@ -13,25 +24,22 @@ export async function getRoute(origin, destination, extra){
     body: JSON.stringify({
       query: query,
       variables: {
-        from:{coordinates: { latitude: 40.59016932131942, longitude: -73.97384273780594}},
-        to: {coordinates: {latitude: 40.76772735386152,longitude: -73.96445880303273}},
+        from:{coordinates: { latitude: origin_lat, longitude: origin_long}},
+        to: {coordinates: {latitude: destination_lat,longitude: destination_long}},
         dateTime: new Date(),
         modes: 
           { accessMode: "foot",
-            transportModes: [{transportMode: "bus"},{transportMode: "metro"}],
+            transportModes: transportModes_Arr,
             egressMode: "foot"
           },
-        numTripPatterns: 1
+        numTripPatterns: numOfTrips
       }
     })
   })
-  console.log(data)
-  const data_body = await data.json()
-  console.log(data_body)
-  const trip_legs = data_body["data"]["trip"]["tripPatterns"][0]["legs"]
-
+  const response_body = await response.json()
+  const trip_legs = response_body["data"]["trip"]["tripPatterns"][0]["legs"]
   console.log(trip_legs)
-
+  console.log(transportModes_Arr)
 }
 
 

@@ -47,21 +47,12 @@ query trip($accessEgressPenalty: [PenaltyForStreetMode!], $alightSlackDefault: I
     previousPageCursor
     nextPageCursor
     tripPatterns {
-      aimedStartTime
-      aimedEndTime
-      expectedEndTime
-      expectedStartTime
       duration
       distance
       generalizedCost
       legs {
         id
         mode
-        aimedStartTime
-        aimedEndTime
-        expectedEndTime
-        expectedStartTime
-        realtime
         distance
         duration
         generalizedCost
@@ -103,71 +94,8 @@ query trip($accessEgressPenalty: [PenaltyForStreetMode!], $alightSlackDefault: I
         interchangeFrom {
           staySeated
         }
-      }
-      systemNotices {
-        tag
       }
     }
   }
 }
 `
-
-
-/*
-
-shortened query  
-{
-    previousPageCursor
-    nextPageCursor
-    tripPatterns {
-      duration
-      distance
-      generalizedCost
-      legs {
-        id
-        mode
-        distance
-        duration
-        generalizedCost
-        fromPlace {
-          name
-          quay {
-            id
-          }
-        }
-        toPlace {
-          name
-          quay {
-            id
-          }
-        }
-        toEstimatedCall {
-          destinationDisplay {
-            frontText
-          }
-        }
-        line {
-          publicCode
-          name
-          id
-          presentation {
-            colour
-          }
-        }
-        authority {
-          name
-          id
-        }
-        pointsOnLink {
-          points
-        }
-        interchangeTo {
-          staySeated
-        }
-        interchangeFrom {
-          staySeated
-        }
-      }
-    }
-  }
-*/
