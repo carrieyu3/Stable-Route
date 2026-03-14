@@ -21,7 +21,7 @@ export default function Preference() {
 
       if (user) {
         const { data } = await supabase
-        .from('user_auth_test')
+        .from('User')
         .select('user_username')
         .eq('user_id', user.id)
         .single();
@@ -84,7 +84,7 @@ export default function Preference() {
               <label htmlFor="fewTransfers" className="flex items-start cursor-pointer relative">
                 <input
                   id="fewTransfers"
-                  type="fewTransfers" 
+                  type="checkbox" 
                   name="fewTransfers"
                   checked={preferences.fewTransfers} 
                   onChange={handleChange}
@@ -156,7 +156,7 @@ export default function Preference() {
               <label htmlFor="bus" className="flex items-start cursor-pointer relative">
                 <input
                   id="bus"
-                  type="bus" 
+                  type="checkbox" 
                   name="bus"
                   checked={preferences.bus} 
                   onChange={handleChange}
@@ -180,7 +180,7 @@ export default function Preference() {
               <label htmlFor="train" className="flex items-start cursor-pointer relative">
                 <input
                   id="ftrain"
-                  type="train" 
+                  type="checkbox" 
                   name="train"
                   checked={preferences.train} 
                   onChange={handleChange}
