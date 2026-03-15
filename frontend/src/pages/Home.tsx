@@ -42,7 +42,7 @@ export default function MainPG(){
               zoom: 12
             }}
             style={{width: '100vw', height: '100vh'}}
-            mapStyle="src/assets/americana.json"
+            mapStyle="src/assets/high contrast map.json"
           />
 
         { /* input for starting destinaton */}
