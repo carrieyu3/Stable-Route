@@ -39,7 +39,7 @@ export default function Login() {
             //navigate("/home");
             navigate("/preference"); //for testing if login data transfers
         }
-    }   
+    };
 
     return (
         <>

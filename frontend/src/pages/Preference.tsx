@@ -26,10 +26,10 @@ export default function Preference() {
 
         //Get username
         const { data } = await supabase
-        .from('User')
-        .select('user_username')
-        .eq('user_id', user.id)
-        .single();
+          .from('User')
+          .select('user_username')
+          .eq('user_id', user.id)
+          .single();
 
         if (data) {
           setUsername(data.user_username);
@@ -51,12 +51,10 @@ export default function Preference() {
 
           setPreferences(previousPreferences);
         }
-
       }
     }
-
     getUserData();
-  }, []) //run only on first render to prevent repetitive username retrieval
+  }, []); //run only on first render to prevent repetitive username retrieval
 
   //Check for selected preferences
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +62,7 @@ export default function Preference() {
     const preferenceChecked = e.target.checked;
 
     setPreferences(values => ({ ...values, [preferenceName]: preferenceChecked }));
-  }
+  };
 
   //Save selected preferences to database
   const handleSave = async () => {
@@ -103,7 +101,7 @@ export default function Preference() {
 
     setTimeout(() => { setPreferenceNotif(false) }, 3000);
 
-  }
+  };
 
   return (
     <>
