@@ -1,0 +1,152 @@
+{
+  "version": 8,
+  "name": "Empty Style",
+  "metadata": {},
+  "sources": {
+    "openmaptiles": {
+      "type": "vector",
+      "url": "https://api.maptiler.com/tiles/v3-openmaptiles/tiles.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL"
+    }
+  },
+  "sprite": "",
+  "glyphs": "https://orangemug.github.io/font-glyphs/glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "rgba(251, 248, 243, 1)"}
+    },
+    {
+      "id": "blocks",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "building",
+      "paint": {"fill-color": "rgba(241, 231, 231, 1)"}
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "water",
+      "paint": {"fill-color": "rgba(169, 185, 228, 1)"}
+    },
+    {
+      "id": "boundary",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "boundary",
+      "layout": {"visibility": "visible"},
+      "paint": {"line-color": "rgba(234, 199, 199, 1)"}
+    },
+    {
+      "id": "location of states",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "place",
+      "filter": ["all", ["==", "class", "country"]],
+      "layout": {
+        "text-field": "{name}",
+        "text-size": 12,
+        "text-transform": "uppercase"
+      },
+      "paint": {
+        "icon-color": "rgba(255, 255, 255, 1)",
+        "text-color": "rgba(131, 69, 69, 1)"
+      }
+    },
+    {
+      "id": "rivers",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "waterway",
+      "paint": {"line-color": "rgba(181, 237, 255, 1)", "line-width": 5}
+    },
+    {
+      "id": "parks",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landcover",
+      "filter": ["all"],
+      "paint": {"fill-color": "rgba(120, 150, 122, 1)"}
+    },
+    {
+      "id": "roads",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "transportation",
+      "filter": ["all"],
+      "paint": {"line-color": "rgba(191, 180, 197, 1)", "line-width": 1}
+    },
+    {
+      "id": "cities",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "place",
+      "filter": ["all", ["==", "class", "city"]],
+      "layout": {
+        "text-field": "{name}",
+        "text-size": 12,
+        "text-transform": "none"
+      },
+      "paint": {
+        "icon-color": "rgba(255, 255, 255, 1)",
+        "text-color": "rgba(131, 69, 69, 1)"
+      }
+    },
+    {
+      "id": "street names",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "place",
+      "layout": {"text-field": "{street}"}
+    },
+    {
+      "id": "park label",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "poi",
+      "filter": ["all", ["==", "class", "park"]],
+      "layout": {
+        "text-field": "{name}",
+        "text-size": 13,
+        "text-allow-overlap": {"stops": [[6, false], [10, false]]},
+        "symbol-placement": "point"
+      },
+      "paint": {
+        "text-color": "rgba(4, 43, 72, 1)",
+        "text-halo-width": 1,
+        "text-halo-color": "rgba(255, 255, 255, 1)"
+      }
+    },
+    {
+      "id": "road label",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "transportation_name",
+      "layout": {
+        "text-field": "{name}",
+        "symbol-placement": "line",
+        "text-size": 11
+      },
+      "paint": {
+        "text-color": "rgba(84, 6, 6, 1)",
+        "text-halo-width": 2,
+        "text-halo-color": "rgba(255, 255, 255, 1)"
+      }
+    },
+    {
+      "id": "place label",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "place",
+      "minzoom": 6,
+      "layout": {"text-field": "{name}", "text-transform": "uppercase"},
+      "paint": {
+        "text-halo-width": 3,
+        "text-color": "rgba(84, 6, 6, 1)",
+        "text-halo-color": "rgba(255, 255, 255, 1)"
+      }
+    }
+  ],
+  "id": "lsiio80"
+}
