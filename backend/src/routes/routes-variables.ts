@@ -88,12 +88,6 @@ query trip($accessEgressPenalty: [PenaltyForStreetMode!], $alightSlackDefault: I
         pointsOnLink {
           points
         }
-        interchangeTo {
-          staySeated
-        }
-        interchangeFrom {
-          staySeated
-        }
       }
     }
   }

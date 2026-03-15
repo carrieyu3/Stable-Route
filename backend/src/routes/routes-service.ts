@@ -16,6 +16,7 @@ export async function getRoute(origin:any, destination:any, extra:any){
   const {lat:origin_lat, long:origin_long} = getCoords(origin)
   const {lat: destination_lat, long: destination_long} = getCoords(destination)
   const {transportModes_Arr, numOfTrips} = getQueryVariables(extra)
+
   const response = await fetch(graphql_url, {
     method: "POST",
     headers: {
@@ -37,9 +38,15 @@ export async function getRoute(origin:any, destination:any, extra:any){
     })
   })
   const response_body = await response.json()
-  const trip_legs = response_body["data"]["trip"]["tripPatterns"][0]["legs"]
-  console.log(trip_legs)
-  console.log(transportModes_Arr)
+  const tripPatterns = response_body["data"]["trip"]["tripPatterns"]
+  console.log(response_body)
+  if (!tripPatterns.length){
+    throw new Error('No Patterns Constructed')
+  }
+  
+  const trip_legs = response_body["data"]["trip"]["tripPatterns"]
+  return trip_legs
+  
 }
 
 

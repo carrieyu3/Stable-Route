@@ -1,5 +1,5 @@
 import { supabase } from '../config/supabase.ts'
 
 
-export async function postRoute(user_id, route){
+export async function uploadRoute(user_id, route){
 }
