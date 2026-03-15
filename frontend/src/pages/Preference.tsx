@@ -5,6 +5,7 @@ import './Preference.css'
 export default function Preference() {
 
   const [username, setUsername] = useState("");
+  const [preferenceNotif, setPreferenceNotif] = useState(false);
   const [preferences, setPreferences] = 
     useState({ 
       highContrast: false,
@@ -15,11 +16,15 @@ export default function Preference() {
       train: false 
     });
 
+  //Retrieve username and previously saved preferences of logged User
   useEffect(() => {
-    const getUsername = async () => {
+    const getUserData = async () => {
+
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
+
+        //Get username
         const { data } = await supabase
         .from('User')
         .select('user_username')
@@ -29,19 +34,75 @@ export default function Preference() {
         if (data) {
           setUsername(data.user_username);
         }
+
+        //Get previous preferences
+        const { data: savedPreferences } = await supabase
+          .from('UserPreference')
+          .select('Preference(preference_name)') //join to UserPref
+          .eq('user_id', user.id);
+
+        if (savedPreferences) {
+          const previousPreferences = { ...preferences };
+
+          for (let i = 0; i < savedPreferences.length; i++) {
+            const preferenceName = (savedPreferences[i].Preference as any).preference_name;
+            previousPreferences[preferenceName as keyof typeof previousPreferences] = true; //restore prev
+          }
+
+          setPreferences(previousPreferences);
+        }
+
       }
     }
 
-    getUsername();
+    getUserData();
   }, []) //run only on first render to prevent repetitive username retrieval
 
-
-  //Update preference if selected by user
+  //Check for selected preferences
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const preferenceName = e.target.name;
     const preferenceChecked = e.target.checked;
 
     setPreferences(values => ({ ...values, [preferenceName]: preferenceChecked }));
+  }
+
+  //Save selected preferences to database
+  const handleSave = async () => {
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user === null){
+      return;
+    }
+
+    await supabase
+      .from('UserPreference')
+      .delete() //reset all previous preferences
+      .eq('user_id', user.id);
+
+    const { data: preferenceData } = await supabase
+      .from('Preference')
+      .select('preference_id, preference_name');
+
+    if (preferenceData === null){
+      return;
+    }
+
+    for (let i = 0; i < preferenceData.length; i++){
+      if (preferences[preferenceData[i].preference_name as keyof typeof preferences] === true){ //checkbox
+        await supabase
+          .from('UserPreference')
+          .insert({
+            user_id: user.id,
+            preference_id: preferenceData[i].preference_id
+          });
+      }
+    }
+
+    setPreferenceNotif(true);
+
+    setTimeout(() => { setPreferenceNotif(false) }, 3000);
+
   }
 
   return (
@@ -72,7 +133,7 @@ export default function Preference() {
                   </svg>
                 </span>
               </label>
-              <label className="cursor-pointer ml-2 text-slate-600 text-sm" htmlFor="elevator">
+              <label className="cursor-pointer ml-2 text-slate-600 text-sm" htmlFor="highContrast">
                 <div>
                   <p className="font-medium">High Contrast View</p>
                 </div>
@@ -96,7 +157,7 @@ export default function Preference() {
                   </svg>
                 </span>
               </label>
-              <label className="cursor-pointer ml-2 text-slate-600 text-sm" htmlFor="elevator">
+              <label className="cursor-pointer ml-2 text-slate-600 text-sm" htmlFor="fewTransfers">
                 <div>
                   <p className="font-medium">Few Transfers</p>
                 </div>
@@ -120,7 +181,7 @@ export default function Preference() {
                   </svg>
                 </span>
               </label>
-              <label className="cursor-pointer ml-2 text-slate-600 text-sm" htmlFor="elevator">
+              <label className="cursor-pointer ml-2 text-slate-600 text-sm" htmlFor="escalator">
                 <div>
                   <p className="font-medium">Escalator</p>
                 </div>
@@ -168,7 +229,7 @@ export default function Preference() {
                   </svg>
                 </span>
               </label>
-              <label className="cursor-pointer ml-2 text-slate-600 text-sm" htmlFor="elevator">
+              <label className="cursor-pointer ml-2 text-slate-600 text-sm" htmlFor="bus">
                 <div>
                   <p className="font-medium">Bus</p>
                 </div>
@@ -179,7 +240,7 @@ export default function Preference() {
             <div className="inline-flex items-start">
               <label htmlFor="train" className="flex items-start cursor-pointer relative">
                 <input
-                  id="ftrain"
+                  id="train"
                   type="checkbox" 
                   name="train"
                   checked={preferences.train} 
@@ -192,15 +253,15 @@ export default function Preference() {
                   </svg>
                 </span>
               </label>
-              <label className="cursor-pointer ml-2 text-slate-600 text-sm" htmlFor="elevator">
+              <label className="cursor-pointer ml-2 text-slate-600 text-sm" htmlFor="train">
                 <div>
                   <p className="font-medium">Train</p>
                 </div>
               </label>
             </div>
 
-            <div className="flex justify-center">
-                <button type="submit"
+            <div className="text-center">
+                <button id = "save-button" onClick={handleSave}
                     className="
                     w-55
                     rounded-md 
@@ -214,7 +275,12 @@ export default function Preference() {
                     focus-visible:outline-blue-500">
                     Save
                 </button>
+                <p id = "save-button-text" className={preferenceNotif ? "visible" : "invisible"}>Preferences were saved!</p>
             </div>
+
+            <p className="fixed bottom-10 right-20">
+                <a href="/home" className="font-semibold text-blue-500 hover:text-blue-300">Back to Home</a>
+            </p>
 
           </div>
         </div>
