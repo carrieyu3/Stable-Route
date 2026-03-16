@@ -44,8 +44,7 @@ export async function getRoute(origin:any, destination:any, extra:any){
     throw new Error('No Patterns Constructed')
   }
   
-  const trip_legs = response_body["data"]["trip"]["tripPatterns"]
-  return trip_legs
+  return tripPatterns
   
 }
 
