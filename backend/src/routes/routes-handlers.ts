@@ -6,7 +6,7 @@ import { uploadRoute } from './routes-queries.ts'
 import { validUserID } from '../users/users-queries.ts'
 
 
-router.post('/make', async (req,res) => {
+router.post('/create', async (req,res) => {
     const {user_id, origin, destination, extra} = req.body
     if (!user_id || !origin || !destination || !extra){
         throw new Error("Required field(s) missing")
@@ -14,6 +14,7 @@ router.post('/make', async (req,res) => {
     
     await validUserID(user_id)
     const route = await getRoute(origin,destination,extra)
+    await uploadRoute(user_id,origin,destination,route[0]["duration"])
 
     res.send(route)
 })

@@ -1,6 +1,6 @@
 import {graphql_url, query} from './routes-variables.ts'
 
-function getCoords(location: any){
+export function getCoords(location: any){
   const lat = location["latitude"]
   const long = location["longitude"]
   return {lat,long}
