@@ -1,7 +1,7 @@
 import express from 'express'
 const router = express.Router()
 
-import { getRoute } from './routes-service.ts'
+import { getRoute, busRtUpdate } from './routes-service.ts'
 import { uploadRoute } from './routes-queries.ts'
 import { validUserID } from '../users/users-queries.ts'
 
@@ -18,5 +18,12 @@ router.post('/create', async (req,res) => {
 
     res.send(route)
 })
+
+router.get('/test', async(req,res)=>{
+    await busRtUpdate()
+    console.log("HERE")
+    res.send('TEST')
+})
+
 
 export default router
