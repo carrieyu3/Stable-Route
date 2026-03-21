@@ -1,23 +1,15 @@
 import {graphql_url, query} from './routes-variables.ts'
 import GtfsRealtimeBindings from "gtfs-realtime-bindings";
+import { type route } from '../interface.ts';
+import dotenv from 'dotenv'
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const env_path = join(__dirname,'../../.env')
+dotenv.config({path: env_path})
 
-export function getCoords(location: any){
-  const lat = location["latitude"]
-  const long = location["longitude"]
-  return {lat,long}
-}
-function getQueryVariables(extra:any){
-  const transportModes_Arr = extra["transportModes"]
-  const numOfTrips = extra["numTripPatterns"]
-  return {transportModes_Arr, numOfTrips}
-}
-
-
-export async function getRoute(origin:any, destination:any, extra:any){
-  const {lat:origin_lat, long:origin_long} = getCoords(origin)
-  const {lat: destination_lat, long: destination_long} = getCoords(destination)
-  const {transportModes_Arr, numOfTrips} = getQueryVariables(extra)
-
+export async function getRoute(route_req : route){
   const response = await fetch(graphql_url, {
     method: "POST",
     headers: {
@@ -26,15 +18,15 @@ export async function getRoute(origin:any, destination:any, extra:any){
     body: JSON.stringify({
       query: query,
       variables: {
-        from:{coordinates: { latitude: origin_lat, longitude: origin_long}},
-        to: {coordinates: {latitude: destination_lat,longitude: destination_long}},
+        from:{coordinates: { latitude: route_req.origin.latitude, longitude: route_req.origin.longitude}},
+        to: {coordinates: {latitude: route_req.destination.latitude,longitude: route_req.destination.longitude}},
         dateTime: new Date(),
         modes: 
           { accessMode: "foot",
-            transportModes: transportModes_Arr,
+            transportModes: route_req.transportModes,
             egressMode: "foot"
           },
-        numTripPatterns: numOfTrips
+        numTripPatterns: route_req.numTripPatterns
       }
     })
   })
@@ -54,7 +46,7 @@ export async function busRtUpdate(){
   try {
     const response = await fetch("https://gtfsrt.prod.obanyc.com/tripUpdates", {
       headers: {
-        "x-api-key": "53bb7fc7-18c6-44ba-8b71-29bef591d4e6",
+        "x-api-key": `${process.env.MTA_BUS_KEY}`,
       },
     });
     if (!response.ok) {
@@ -64,18 +56,28 @@ export async function busRtUpdate(){
     const feed = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(
       new Uint8Array(buffer)
     );
-    console.log(feed.entity[0]?.tripUpdate?.trip)
-    const d = new Date(feed.entity[0]?.tripUpdate?.stopTimeUpdate[0]?.arrival?.time["low"] * 1000)
-    const nd = d.toLocaleString("en-US", {
-  timeZone: "America/New_York"
-});
-    console.log(feed.entity[0]?.tripUpdate?.stopTimeUpdate[0]?.stopId,nd)
-    // feed.entity[0]
-    // feed.entity.forEach((entity) => {
-    //   if (entity.tripUpdate) {
-    //     console.log(entity.tripUpdate);
-    //   }
-    // });
+    
+    /*
+    outbound is 0
+    inbound is 1
+    */
+    const time: string[] = []
+
+    feed.entity.forEach((entity) => {
+      if (entity.tripUpdate?.trip.routeId == "B1" && entity.tripUpdate.trip.directionId == 0 && entity.tripUpdate.stopTimeUpdate) {
+        entity.tripUpdate.stopTimeUpdate.forEach(stop => {
+          if (stop.stopId == "300023" && stop.arrival?.time){
+            console.log(stop)
+            const date = new Date(stop.arrival?.time["low"] * 1000)
+            const nyc_time = date.toLocaleString("en-US", {timeZone: "America/New_York"})
+            time.push(nyc_time)
+
+          }
+        });
+      }
+    });
+    console.log(JSON.stringify(time))
+    
   }
   catch (error) {
     console.log(error);
