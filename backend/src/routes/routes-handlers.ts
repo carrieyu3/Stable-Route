@@ -1,7 +1,7 @@
 import express from 'express'
 const router = express.Router()
 
-import { getRoute, busRtUpdate } from './routes-service.ts'
+import { getRoute, busArrival, busAlert, getDirectionId } from './routes-service.ts'
 import { uploadRoute } from './routes-queries.ts'
 import { validUserID } from '../users/users-queries.ts'
 import { type bus, type route } from '../interface.ts'
@@ -37,20 +37,34 @@ router.post('/bus', async(req,res) => {
     if (!req.body.hasOwnProperty("publicCode") || !req.body.hasOwnProperty("stopId")  || !req.body.hasOwnProperty("directionId")){
         throw new Error("Required field(s) missing")
     }
-    let direction
-    if (req.body.directionId == "outbound"){
-        direction = 0
-    }else{
-        direction = 1
-    }
+    const direction = getDirectionId(req.body.directionId)
+
     const bus_stop : bus = {
         publicCode: req.body.publicCode,
         stopId: req.body.stopId,
         directionId: direction
     }
 
-    const time = await busRtUpdate(bus_stop)
+    const time = await busArrival(bus_stop)
     res.send(time)
+})
+
+router.post('/bus-alert', async(req,res) => {
+    if (Object.keys(req.body).length === 0){
+        throw new Error("Body Empty")
+    }
+    if (!req.body.hasOwnProperty("publicCode") || !req.body.hasOwnProperty("stopId")  || !req.body.hasOwnProperty("directionId")){
+        throw new Error("Required field(s) missing")
+    }
+    const direction = getDirectionId(req.body.directionId)
+
+    const bus_stop : bus = {
+        publicCode: req.body.publicCode,
+        stopId: req.body.stopId,
+        directionId: direction
+    }
+    const alerts = await busAlert(bus_stop)
+    res.send(alerts)
 })
 
 

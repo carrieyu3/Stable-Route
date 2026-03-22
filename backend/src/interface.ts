@@ -15,3 +15,12 @@ export interface bus {
     stopId: String,
     directionId: Number
 }
+
+export interface busAlert {
+  alert_description: String
+}
+export interface busPlannedWork{
+  PW_end_date : String
+  PW_header: String
+  PW_description: String
+}
