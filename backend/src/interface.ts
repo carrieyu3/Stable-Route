@@ -1,6 +1,6 @@
 interface coordinates {
-    latitude ?: Long
-    longitude ?: Long  
+    latitude : Long
+    longitude : Long  
 }
 
 export interface route {
@@ -8,4 +8,10 @@ export interface route {
     destination: coordinates
     transportModes: Array<JSON>
     numTripPatterns: Number
+}
+
+export interface bus {
+    publicCode: String,
+    stopId: String,
+    directionId: Number
 }

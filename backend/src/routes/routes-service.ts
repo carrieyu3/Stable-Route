@@ -1,6 +1,6 @@
 import {graphql_url, query} from './routes-variables.ts'
 import GtfsRealtimeBindings from "gtfs-realtime-bindings";
-import { type route } from '../interface.ts';
+import { type route , type bus} from '../interface.ts';
 import dotenv from 'dotenv'
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -42,7 +42,7 @@ export async function getRoute(route_req : route){
 }
 
 
-export async function busRtUpdate(){
+export async function busRtUpdate(bus_stop : bus){
   try {
     const response = await fetch("https://gtfsrt.prod.obanyc.com/tripUpdates", {
       headers: {
@@ -56,17 +56,15 @@ export async function busRtUpdate(){
     const feed = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(
       new Uint8Array(buffer)
     );
-    
-    /*
-    outbound is 0
-    inbound is 1
-    */
+
     const time: string[] = []
 
     feed.entity.forEach((entity) => {
-      if (entity.tripUpdate?.trip.routeId == "B1" && entity.tripUpdate.trip.directionId == 0 && entity.tripUpdate.stopTimeUpdate) {
-        entity.tripUpdate.stopTimeUpdate.forEach(stop => {
-          if (stop.stopId == "300023" && stop.arrival?.time){
+      if (entity.tripUpdate?.trip.routeId == bus_stop.publicCode 
+        && entity.tripUpdate.trip.directionId == bus_stop.directionId && entity.tripUpdate.stopTimeUpdate) {
+        
+          entity.tripUpdate.stopTimeUpdate.forEach(stop => {
+          if (stop.stopId == bus_stop.stopId && stop.arrival?.time){
             console.log(stop)
             const date = new Date(stop.arrival?.time["low"] * 1000)
             const nyc_time = date.toLocaleString("en-US", {timeZone: "America/New_York"})
@@ -77,6 +75,7 @@ export async function busRtUpdate(){
       }
     });
     console.log(JSON.stringify(time))
+    return time
     
   }
   catch (error) {
