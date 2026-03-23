@@ -1,7 +1,7 @@
 import express from 'express'
 const router = express.Router()
 
-import { getRoute, busArrival, busAlert, getDirectionId } from './routes-service.ts'
+import { getRoute, getTrimmedRoute, busArrival, busAlert, getDirectionId } from './routes-service.ts'
 import { uploadRoute } from './routes-queries.ts'
 import { validUserID } from '../users/users-queries.ts'
 import { type bus, type route } from '../interface.ts'
@@ -17,17 +17,23 @@ router.post('/create', async (req,res) => {
     const route_req = req.body as route
 
     await validUserID(user_id)
+
+    //untrimmed
     const route = await getRoute(route_req)
     await uploadRoute(user_id,route_req,route[0]["duration"])
 
-    res.send(route)
+    //trimmed
+    const trimmedRoute = await getTrimmedRoute(route)
+    console.log(JSON.stringify(trimmedRoute, null, 2)) //temp readability
+    res.send(trimmedRoute)
+    
 })
 
 /*
 {
-	"publicCode":"B1",
-	"stopId": "300023",
-	"directionId": "outbound"
+    "publicCode":"B1",
+    "stopId": "300023",
+    "directionId": "outbound"
 }
 */
 router.post('/bus', async(req,res) => {
