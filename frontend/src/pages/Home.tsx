@@ -83,13 +83,11 @@ export default function MainPG(){
 
             }}
             style={{width: '100vw', height: '100vh'}}
-            mapStyle="src/assets/americana.json"
-          >
+            mapStyle="src/assets/high-contrast-map.json"
+          />
 
             {/* below gives us the user location , we want to feed it into start point */}
             {/* <GeolocateControl showUserLocation={true} trackUserLocation={true}/> */}
-
-          </Map>
 
             
         { /* input for destinaton */}

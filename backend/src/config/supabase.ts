@@ -11,10 +11,10 @@ const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY
 
 if (!SUPABASE_URL){
-    throw 'Supbase Url is undefined'
+    throw new Error('Supbase Url is undefined')
 }
 if (!SUPABASE_PUBLISHABLE_KEY){
-    throw 'Supabase Pusblishable Key is undefined'
+    throw new Error('Supabase Pusblishable Key is undefined')
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)

@@ -46,7 +46,6 @@ export default function Signup() {
         }
     };
 
-    //Capture user input and begin Signup validation
     const onSubmit: SubmitHandler<SignupFormInputs> = async (data) => {
 
         if (data.password !== data.passwordConfirmation) {
@@ -56,7 +55,7 @@ export default function Signup() {
 
         //query through User db for existing username
         const { data: existingUser } = await supabase
-            .from('user_auth_test') //switch to User for official db
+            .from('User')
             .select('user_username')
             .ilike('user_username', data.username) //disregard case-sensitive chars
             .single();
@@ -79,7 +78,7 @@ export default function Signup() {
         //after auth, store data in User table
         else if (authData.user) {
             const { error: databaseError } = await supabase
-                .from('user_auth_test') //switch to User for official db
+                .from('User')
                 .insert([{ 
                     user_id: authData.user.id, 
                     user_username: data.username.toLowerCase(),
