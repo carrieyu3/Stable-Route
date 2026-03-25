@@ -276,8 +276,12 @@ export default function Preference() {
                 <p id = "save-button-text" className={preferenceNotif ? "visible" : "invisible"}>Preferences were saved!</p>
             </div>
 
-            <p className="fixed bottom-10 right-20">
+            <p className="fixed bottom-13 right-10">
                 <a href="/home" className="font-semibold text-blue-500 hover:text-blue-300">Back to Home</a>
+            </p>
+
+            <p className="fixed bottom-6 right-10">
+                <a href="/" className="font-semibold text-blue-500 hover:text-blue-300">Logout</a>
             </p>
 
           </div>

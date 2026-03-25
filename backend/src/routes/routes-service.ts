@@ -48,6 +48,29 @@ export async function getRoute(route_req : route){
   
 }
 
+//Trim OTP response
+export function getTrimmedRoute(tripPatterns: any[]) {
+
+  //stats for each leg inside of pattern
+  return tripPatterns.map((pattern: any) => { //loop over all patterns
+    const legs = pattern.legs.map((leg: any) => { //loop over all legs inside one pattern
+      return {
+        mode: leg.mode,
+        distance: leg.distance,
+        duration: leg.duration,
+        fromPlace: leg.fromPlace?.name ?? null,
+        toPlace: leg.toPlace?.name ?? null
+      }
+    })
+
+    //total stats for the entire pattern
+    return {
+      duration: pattern.duration,
+      distance: pattern.distance,
+      legs
+    }
+  })
+}
 
 export async function busArrival(bus_stop : bus){
   try {
