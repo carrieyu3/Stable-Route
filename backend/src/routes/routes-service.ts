@@ -121,12 +121,12 @@ export async function busAlert(bus_stop : bus){
             const date_number = entity.alert?.activePeriod?.at(0)?.end?.valueOf()
             const date = new Date(Number(date_number) * 1000)
             const nyc_time = date.toLocaleString("en-US", {timeZone: "America/New_York"})
-            bus_stop_planned_work.PW_end_date = nyc_time
+            bus_stop_planned_work.pw_end_date = nyc_time
             if (entity.alert?.headerText?.translation){
-              bus_stop_planned_work.PW_header = entity.alert?.headerText?.translation.at(0)?.text ?? ''
+              bus_stop_planned_work.pw_header = entity.alert?.headerText?.translation.at(0)?.text ?? ''
             }
             if (entity.alert?.descriptionText?.translation){
-              bus_stop_planned_work.PW_description = entity.alert.descriptionText.translation.at(0)?.text ?? ''
+              bus_stop_planned_work.pw_description = entity.alert.descriptionText.translation.at(0)?.text ?? ''
             }
           }
         });

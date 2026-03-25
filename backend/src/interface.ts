@@ -20,7 +20,7 @@ export interface busAlert {
   alert_description: String
 }
 export interface busPlannedWork{
-  PW_end_date : String
-  PW_header: String
-  PW_description: String
+  pw_end_date : String
+  pw_header: String
+  pw_description: String
 }

@@ -30,7 +30,7 @@ router.post('/create', async (req,res) => {
 	"directionId": "outbound"
 }
 */
-router.post('/bus', async(req,res) => {
+router.post('/bus-arrival', async(req,res) => {
     if (Object.keys(req.body).length === 0){
         throw new Error("Body Empty")
     }
