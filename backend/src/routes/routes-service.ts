@@ -1,6 +1,6 @@
 import {graphql_url, query} from './routes-variables.ts'
 import GtfsRealtimeBindings from "gtfs-realtime-bindings";
-import { type route , type bus, type busAlert, type busPlannedWork} from '../interface.ts';
+import { type route , type transit, type busAlert, type busPlannedWork} from '../interface.ts';
 import dotenv from 'dotenv'
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -72,7 +72,7 @@ export function getTrimmedRoute(tripPatterns: any[]) {
   })
 }
 
-export async function busArrival(bus_stop : bus){
+export async function busArrival(bus_stop : transit){
   try {
     const response = await fetch("https://gtfsrt.prod.obanyc.com/tripUpdates", {
       headers: {
@@ -115,7 +115,7 @@ export async function busArrival(bus_stop : bus){
 }
 
 
-export async function busAlert(bus_stop : bus){
+export async function busAlert(bus_stop : transit){
   try {
     const response = await fetch("https://gtfsrt.prod.obanyc.com/alerts", {
       headers: {
@@ -165,4 +165,99 @@ export async function busAlert(bus_stop : bus){
     console.log(error);
     process.exit(1);
   }
+}
+
+const orange_trains = new Set(["B","D","F","M","FS"])
+const blue_trains = new Set(["A","C","E","H"])
+const brown_trains = new Set(["J","Z"])
+const yellow_trains = new Set(["N","Q","R","W"])
+const number_trains = new Set(["1","2","3","4","5","6","6X","7","7X","S","GS"])
+
+const train_urls = {
+  orange: "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-bdfm",
+  blue: "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-ace",
+  G: "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-g",
+  brown: "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-jz",
+  yellow: "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-nqrw",
+  L: "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-l",
+  number: "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs",
+  SI: "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-si"
+}
+
+function getTrainUrl(public_code : string){
+  if (orange_trains.has(public_code)){ return train_urls.orange }
+  if (blue_trains.has(public_code)) {return train_urls.blue }
+  if (public_code == "G"){ return train_urls.G }
+  if (brown_trains.has(public_code)){ return train_urls.brown }
+  if (yellow_trains.has(public_code)){ return train_urls.yellow} 
+  if (public_code == "L"){ return train_urls.L }
+  if (number_trains.has(public_code)){ return train_urls.number } 
+  if (public_code == "SI"){ return train_urls.SI } // SIR trains
+  throw new Error("Invalid Public code")
+}
+
+export async function trainArrival(train_stop : transit){
+  const mta_url = getTrainUrl(train_stop.publicCode)
+  const response = await fetch(mta_url)
+  if (!response.ok){
+    throw new Error(`${response.url}: ${response.status} ${response.statusText}`);
+  }
+  const buffer = await response.arrayBuffer();
+  const feed = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(
+    new Uint8Array(buffer)
+  );
+
+  const time: string[] = []
+
+  feed.entity.forEach((entity) => {
+    if (entity.tripUpdate?.trip.routeId == train_stop.publicCode){
+      entity.tripUpdate.stopTimeUpdate?.forEach((stop) => {
+        if (stop.stopId == train_stop.stopId && time.length < 3){
+          const arrival_time = stop.arrival?.time?.valueOf()
+          const date = new Date(Number(arrival_time) * 1000)
+          const nyc_time = date.toLocaleString("en-US", {timeZone: "America/New_York"})
+          time.push(nyc_time)
+        }
+      })
+    }
+  })
+  
+  const time_json = JSON.stringify(time)
+  return time_json
+}
+
+export async function trainAlert(){
+  const response = await fetch("https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fsubway-alerts")
+  if (!response.ok){
+    throw new Error(`${response.url}: ${response.status} ${response.statusText}`);
+  }
+  const buffer = await response.arrayBuffer();
+  const feed = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(
+    new Uint8Array(buffer)
+  );
+
+  const time: string[] = []
+  // console.log(feed.entity.at(0)?.alert?.descriptionText)
+  feed.entity.forEach((entity) => {
+    entity.alert?.informedEntity?.forEach((stops) => {
+      console.log(stops)
+    })
+    
+  })
+  
+  // const time_json = JSON.stringify(time)
+  // return time_json
+}
+
+export async function SubwayElevatorEscalatorCurrentOutages(){
+  // const mta_url = getTrainUrl(train_stop.publicCode)
+  const response = await fetch("https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fnyct_ene.json")
+  if (!response.ok){
+    throw new Error(`${response.url}: ${response.status} ${response.statusText}`);
+  }
+  const json_res = await response.json()
+  console.log(json_res)
+  
+  // const time_json = JSON.stringify(time)
+  // return time_json
 }

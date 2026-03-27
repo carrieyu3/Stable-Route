@@ -10,10 +10,10 @@ export interface route {
     numTripPatterns: Number
 }
 
-export interface bus {
-    publicCode: String,
+export interface transit {
+    publicCode: string,
     stopId: String,
-    directionId: Number
+    directionId ?: Number
 }
 
 export interface busAlert {
