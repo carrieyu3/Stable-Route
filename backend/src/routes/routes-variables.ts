@@ -68,6 +68,9 @@ query trip($accessEgressPenalty: [PenaltyForStreetMode!], $alightSlackDefault: I
             id
           }
         }
+        serviceJourney{
+          directionType
+        }
         toEstimatedCall {
           destinationDisplay {
             frontText

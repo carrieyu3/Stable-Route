@@ -1,10 +1,10 @@
 import express from 'express'
 const router = express.Router()
 
-import { getRoute, getTrimmedRoute, busArrival, busAlert, getDirectionId } from './routes-service.ts'
+import { getRoute, getTrimmedRoute, busArrival, busAlert, getDirectionId, trainArrival, trainAlert, SubwayElevatorEscalatorCurrentOutages} from './routes-service.ts'
 import { uploadRoute } from './routes-queries.ts'
 import { validUserID } from '../users/users-queries.ts'
-import { type bus, type route } from '../interface.ts'
+import { type transit, type route } from '../interface.ts'
 
 router.post('/create', async (req,res) => {
     if (Object.keys(req.body).length === 0){
@@ -31,12 +31,12 @@ router.post('/create', async (req,res) => {
 
 /*
 {
-    "publicCode":"B1",
-    "stopId": "300023",
+    "publicCode":"B68",
+    "stopId": "____",
     "directionId": "outbound"
 }
 */
-router.post('/bus', async(req,res) => {
+router.post('/bus-arrival', async(req,res) => {
     if (Object.keys(req.body).length === 0){
         throw new Error("Body Empty")
     }
@@ -45,7 +45,7 @@ router.post('/bus', async(req,res) => {
     }
     const direction = getDirectionId(req.body.directionId)
 
-    const bus_stop : bus = {
+    const bus_stop : transit = {
         publicCode: req.body.publicCode,
         stopId: req.body.stopId,
         directionId: direction
@@ -64,7 +64,7 @@ router.post('/bus-alert', async(req,res) => {
     }
     const direction = getDirectionId(req.body.directionId)
 
-    const bus_stop : bus = {
+    const bus_stop : transit = {
         publicCode: req.body.publicCode,
         stopId: req.body.stopId,
         directionId: direction
@@ -72,6 +72,39 @@ router.post('/bus-alert', async(req,res) => {
     const alerts = await busAlert(bus_stop)
     res.send(alerts)
 })
+
+
+/*
+{
+    "publicCode" : "6",
+    "id": "subway:___"
+}
+*/
+router.post('/train-arrival', async(req,res) => {
+    console.log("HELLO")
+    if (Object.keys(req.body).length === 0){
+        throw new Error("Body Empty")
+    }
+    if (!req.body.hasOwnProperty("publicCode") || !req.body.hasOwnProperty("stopId")){
+        throw new Error("Required field(s) missing")
+    }
+    const stop_id = req.body.stopId.split(":")
+
+    const train_stop : transit = {
+        publicCode: req.body.publicCode,
+        stopId : stop_id[1]
+    }
+    const json_arrivals = await trainArrival(train_stop)
+    res.send(json_arrivals)
+})
+
+router.get('/train-alert', async(req,res) =>{
+    // await SubwayElevatorEscalatorCurrentOutages()
+    await trainAlert()
+    res.send("TRAIN ALERT")
+})
+
+
 
 
 export default router

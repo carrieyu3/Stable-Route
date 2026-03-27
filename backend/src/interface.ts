@@ -10,17 +10,17 @@ export interface route {
     numTripPatterns: Number
 }
 
-export interface bus {
-    publicCode: String,
+export interface transit {
+    publicCode: string,
     stopId: String,
-    directionId: Number
+    directionId ?: Number
 }
 
 export interface busAlert {
   alert_description: String
 }
 export interface busPlannedWork{
-  PW_end_date : String
-  PW_header: String
-  PW_description: String
+  pw_end_date : String
+  pw_header: String
+  pw_description: String
 }
