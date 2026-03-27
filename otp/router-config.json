@@ -11,6 +11,9 @@
             "escalator": {
                 "reluctance": 1
             }
+        },
+        "transferOptimization" : {
+            "optimizeTransferWaitTime" : true
         }
     }
 }
