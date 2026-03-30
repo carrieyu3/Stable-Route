@@ -1,7 +1,7 @@
 import express from 'express'
 const router = express.Router()
 
-import { getRoute, getTrimmedRoute, busArrival, busAlert, getDirectionId, trainArrival, trainAlert, SubwayElevatorEscalatorCurrentOutages} from './routes-service.ts'
+import { getRoute, getTrimmedRoute, busArrival, busAlert, getDirectionId, trainArrival, trainAlert} from './routes-service.ts'
 import { uploadRoute } from './routes-queries.ts'
 import { validUserID } from '../users/users-queries.ts'
 import { type transit, type route } from '../interface.ts'
@@ -81,7 +81,6 @@ router.post('/bus-alert', async(req,res) => {
 }
 */
 router.post('/train-arrival', async(req,res) => {
-    console.log("HELLO")
     if (Object.keys(req.body).length === 0){
         throw new Error("Body Empty")
     }
@@ -98,10 +97,16 @@ router.post('/train-arrival', async(req,res) => {
     res.send(json_arrivals)
 })
 
-router.get('/train-alert', async(req,res) =>{
-    // await SubwayElevatorEscalatorCurrentOutages()
-    await trainAlert()
-    res.send("TRAIN ALERT")
+
+router.post('/train-alert', async(req,res) =>{
+    if (Object.keys(req.body).length === 0){
+        throw new Error("Body Empty")
+    }else if (!req.body.hasOwnProperty("publicCode")){
+        throw new Error("Field is missing")
+    }
+
+    const alert_json = await trainAlert(req.body.publicCode)
+    res.send(alert_json)
 })
 
 
