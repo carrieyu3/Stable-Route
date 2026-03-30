@@ -1,7 +1,7 @@
 {
   "version": 8,
   "name": "Empty Style",
-  "metadata": {"maputnik:renderer": "mlgljs"},
+  "metadata": {},
   "sources": {
     "openmaptiles": {
       "type": "vector",
@@ -21,14 +21,14 @@
       "type": "fill",
       "source": "openmaptiles",
       "source-layer": "building",
-      "paint": {"fill-color": "rgba(244, 242, 242, 1)"}
+      "paint": {"fill-color": "rgba(241, 231, 231, 1)"}
     },
     {
       "id": "water",
       "type": "fill",
       "source": "openmaptiles",
       "source-layer": "water",
-      "paint": {"fill-color": "rgba(81, 112, 195, 1)"}
+      "paint": {"fill-color": "rgba(169, 185, 228, 1)"}
     },
     {
       "id": "boundary",
@@ -59,7 +59,7 @@
       "type": "line",
       "source": "openmaptiles",
       "source-layer": "waterway",
-      "paint": {"line-color": "rgba(81, 112, 195, 1)", "line-width": 5}
+      "paint": {"line-color": "rgba(181, 237, 255, 1)", "line-width": 5}
     },
     {
       "id": "parks",
@@ -67,7 +67,7 @@
       "source": "openmaptiles",
       "source-layer": "landcover",
       "filter": ["all"],
-      "paint": {"fill-color": "rgba(152, 182, 154, 1)"}
+      "paint": {"fill-color": "rgba(120, 150, 122, 1)"}
     },
     {
       "id": "roads",
@@ -75,7 +75,7 @@
       "source": "openmaptiles",
       "source-layer": "transportation",
       "filter": ["all"],
-      "paint": {"line-color": "rgba(157, 119, 184, 1)", "line-width": 1}
+      "paint": {"line-color": "rgba(191, 180, 197, 1)", "line-width": 1}
     },
     {
       "id": "cities",
