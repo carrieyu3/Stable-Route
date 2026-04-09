@@ -48,7 +48,7 @@ export async function getRoute(route_req : route){
   
 }
 
-//Trim OTP response
+//Trim route response
 export function getTrimmedRoute(tripPatterns: any[]) {
 
   //stats for each leg inside of pattern
@@ -58,8 +58,8 @@ export function getTrimmedRoute(tripPatterns: any[]) {
         mode: leg.mode,
         distance: leg.distance,
         duration: leg.duration,
-        fromPlace: leg.fromPlace?.name ?? null,
-        toPlace: leg.toPlace?.name ?? null
+        fromPlace: leg.fromPlace.name,
+        toPlace: leg.toPlace.name
       }
     })
 
