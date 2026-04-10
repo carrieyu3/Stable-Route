@@ -9,12 +9,54 @@ const __dirname = dirname(__filename);
 const env_path = join(__dirname,'../../.env')
 dotenv.config({path: env_path})
 
-
 export function getDirectionId(direction : String){
   if (direction == "outbound"){
         return 0
   }
   return 1
+}
+
+//convert address to coordinates and ensure it's within NYC
+export async function validateAddress(address: string){
+
+    //geocoding 
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&countrycodes=us`, {
+        headers: {
+            'User-Agent': 'StableRoute/1.0'
+        }
+    })
+
+    const data = await res.json()
+    //console.log(JSON.stringify(data[0], null, 2))
+
+    if (!data.length){
+        throw new Error("Address not found")
+    }
+
+    //convert string to decimal
+    const latitude = parseFloat(data[0].lat)
+    const longitude = parseFloat(data[0].lon)
+
+    //NYC bound box
+    const nyc_coordinateBounds = {
+      maxLatitude: 40.90345,
+      maxLongitude: -73.69875,
+      minLatitude: 40.45733,
+      minLongitude: -74.25380
+    }
+
+    //bound address within NYC
+    const nycBound = 
+      latitude <= nyc_coordinateBounds.maxLatitude && latitude >= nyc_coordinateBounds.minLatitude &&
+      longitude <= nyc_coordinateBounds.maxLongitude && longitude >= nyc_coordinateBounds.minLongitude
+
+    if (!nycBound){
+        throw new Error("Address is not within New York City")
+    }
+
+    return { 
+      latitude, longitude 
+    }
 }
 
 export async function getRoute(route_req : route){
@@ -106,7 +148,6 @@ export async function busArrival(bus_stop : transit){
   const time_json = JSON.stringify(arrival_in_minutes)
   return time_json
 }
-
 
 export async function busAlert(bus_stop : transit){
   const response = await fetch("https://gtfsrt.prod.obanyc.com/alerts", {

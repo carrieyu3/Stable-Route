@@ -1,32 +1,44 @@
 import express from 'express'
 const router = express.Router()
 
-import { getRoute, getTrimmedRoute, busArrival, busAlert, getDirectionId, trainArrival, trainAlert} from './routes-service.ts'
+import { getRoute, getTrimmedRoute, busArrival, busAlert, getDirectionId, trainArrival, trainAlert, validateAddress} from './routes-service.ts'
 import { uploadRoute } from './routes-queries.ts'
 import { validUserID } from '../users/users-queries.ts'
 import { type transit, type route } from '../interface.ts'
 
 router.post('/create', async (req,res) => {
-    if (Object.keys(req.body).length === 0){
-        throw new Error("Body Empty")
-    }    
-    if (!req.body.hasOwnProperty("user_id") || !req.body.hasOwnProperty("origin") || !req.body.hasOwnProperty("destination") || !req.body.hasOwnProperty("transportModes") || !req.body.hasOwnProperty("numTripPatterns")){
-        throw new Error("Required field(s) missing")
+    try {
+        if (Object.keys(req.body).length === 0){
+            throw new Error("Body Empty")
+        }    
+        if (!req.body.hasOwnProperty("user_id") || !req.body.hasOwnProperty("origin") || !req.body.hasOwnProperty("destination") || !req.body.hasOwnProperty("transportModes") || !req.body.hasOwnProperty("numTripPatterns")){
+            throw new Error("Required field(s) missing")
+        }
+        
+        const {user_id} = req.body
+        const originCoordinates = await validateAddress(req.body.origin)
+        const destinationCoordinates = await validateAddress(req.body.destination)
+
+        const route_req = {
+            ...req.body,
+            origin: originCoordinates,
+            destination: destinationCoordinates
+        } as route
+
+        await validUserID(user_id)
+
+        //untrimmed
+        const route = await getRoute(route_req)
+        await uploadRoute(user_id,route_req,route[0]["duration"])
+
+        //trimmed
+        const trimmedRoute = getTrimmedRoute(route)
+        console.log(JSON.stringify(trimmedRoute, null, 2)) //temp readability
+        res.send(trimmedRoute)
+    } 
+    catch (e: any) {
+        res.status(400).json({ error: e.message })
     }
-    const {user_id} = req.body
-    const route_req = req.body as route
-
-    await validUserID(user_id)
-
-    //untrimmed
-    const route = await getRoute(route_req)
-    await uploadRoute(user_id,route_req,route[0]["duration"])
-
-    //trimmed
-    const trimmedRoute = await getTrimmedRoute(route)
-    console.log(JSON.stringify(trimmedRoute, null, 2)) //temp readability
-    res.send(trimmedRoute)
-    
 })
 
 /*
