@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import './Home.css'
@@ -15,7 +14,6 @@ import { useEffect, useRef , useState } from "react";
 import { supabase } from "../lib/supabase";
 import Preference from "./Preference";
 
-
 // input for starting destination 
 type destinationInput = {
   origin: string;
@@ -25,8 +23,8 @@ type destinationInput = {
 export default function MainPG(){
 
   const [addressError, setAddressError] = useState("");
-
   const [username, setUsername] = useState("");
+  const [userId, setUserId] = useState("");
   const [preferences, setPreferences] = 
     useState({ 
       highContrast: false,
@@ -54,23 +52,39 @@ export default function MainPG(){
 
   //Capture user input and begin Signup validation
   const onSubmit: SubmitHandler<destinationInput> = async (data) => {
-    if (data.origin == data.destination){
-      displayAddressError("Invalid address.");
-    }
-    else if(data.origin == "" || data.destination == ""){
-      displayAddressError("Invalid address");
-    }
-    else{
-      const rawResponse = await fetch('https://localhost:3000', {
-        method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-        body: JSON.stringify({origin: 1, destination: 2})
-    });
-    }
-    return;
+      if (data.origin == data.destination || data.origin == "" || data.destination == ""){
+          setAddressError("Invalid address")
+          return
+      }
+      try {
+          //send route request to backend
+          const rawResponse = await fetch('http://localhost:3000/routes/create', {
+              method: 'POST',
+              headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                  user_id: userId,
+                  origin: data.origin,
+                  destination: data.destination,
+                  transportModes: [{ transportMode: "bus" }], //placeholder
+                  numTripPatterns: 5 //display # trip patterns
+              })
+          })
+
+          const result = await rawResponse.json()
+
+          if (result.error){
+              setAddressError(result.error)
+          } 
+          else {
+              console.log(result)
+          }
+      } 
+      catch (e: any) {
+          setAddressError(e.message)
+      }
   }
 
   //get user pref
@@ -81,6 +95,7 @@ export default function MainPG(){
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
+        setUserId(user.id)
 
         //Get username
         const { data } = await supabase
@@ -187,6 +202,9 @@ export default function MainPG(){
 
                 onChange={() => {setAddressError("") ; clearErrors("destination"); }}
               />
+
+            <button type="submit" className="mt-2 w-full bg-blue-500 text-white py-1.5 rounded-md text-sm font-medium hover:bg-blue-600 transition-colors">Search</button>
+            {addressError && <p className="text-red-500 text-sm">{addressError}</p>}
 
             </div>
 
