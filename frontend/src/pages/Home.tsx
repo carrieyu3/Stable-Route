@@ -34,6 +34,9 @@ export default function MainPG(){
       bus: false, 
       train: false 
     });
+  const [showPanel, setShowPanel] = useState(false);
+  const [searchedOrigin, setSearchedOrigin] = useState("");
+  const [searchedDestination, setSearchedDestination] = useState("");
 
   //database errors - override supabase default message
     const displayAddressError = (error: any) => {
@@ -52,10 +55,19 @@ export default function MainPG(){
 
   //Capture user input and begin Signup validation
   const onSubmit: SubmitHandler<destinationInput> = async (data) => {
+
+      setShowPanel(true); //show immediately after search is clicked for now
+      //change to only within NYC bounds later and if a route is found
+
       if (data.origin == data.destination || data.origin == "" || data.destination == ""){
           setAddressError("Invalid address")
           return
       }
+
+      // store searched values to display in sidebar
+      setSearchedOrigin(data.origin)
+      setSearchedDestination(data.destination)
+
       try {
           //send route request to backend
           const rawResponse = await fetch('http://localhost:3000/routes/create', {
@@ -128,8 +140,6 @@ export default function MainPG(){
     }
     getUserData();
   }, []); //run only on first render to prevent repetitive username retrieval
-
-  
 
   //get user curr location
   const geoControlRef= useRef<maplibregl.GeolocateControl>(null)  
@@ -212,8 +222,59 @@ export default function MainPG(){
               <a href="/preference" className="w-100 h-100 p-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700 transition-colors">settings</a>
               {/* using <GearFill/> doesnt work for some reason */}
             </div>
-            
           </form>
+
+          {/* White sidebar */}
+          {showPanel && (
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '360px',
+                height: '100vh',
+                background: '#ffffff',
+                zIndex: 10,
+                padding: '24px 20px',
+            }} >
+                
+              {/* Exit white sidebar */}
+              <button onClick={() => setShowPanel(false)}
+                style={{
+                  position: 'absolute',
+                  top: 16,
+                  right: 16,
+                  fontSize: 20,
+                  cursor: 'pointer',
+                  lineHeight: 1,
+                }}
+              > x
+              </button>
+
+              {/* Origin */}
+              <div style={{ marginBottom: 16 }}>
+                <p style={{ fontSize: 11, color: '#888', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Starting Location</p>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <p style={{ fontSize: 15, fontWeight: 600, color: '#111', margin: 0 }}>{searchedOrigin}</p>
+                </div>
+              </div>
+
+              {/* Destination */}
+              <div>
+                <p style={{ fontSize: 11, color: '#888', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Destination</p>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <p style={{ fontSize: 15, fontWeight: 600, color: '#111', margin: 0 }}>{searchedDestination}</p>
+                </div>
+              </div>
+
+              {/* Transition to Route */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 20, marginBottom: 16 }}>
+                <div style={{ flex: 1, height: '1px', background: '#eee' }} />
+                <span style={{ fontSize: 14, color: '#aaa' }}>Route</span>
+                <div style={{ flex: 1, height: '1px', background: '#eee' }} />
+              </div>
+
+            </div>
+          )}
 
         </div>
 

@@ -16,47 +16,55 @@ export function getDirectionId(direction : String){
   return 1
 }
 
-//convert address to coordinates and ensure it's within NYC
+//Ensure addresses are within NYC
 export async function validateAddress(address: string){
 
-    //geocoding 
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&countrycodes=us`, {
-        headers: {
-            'User-Agent': 'StableRoute/1.0'
-        }
-    })
+  //geocoding to convert address into coordinates for OTP
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&countrycodes=us&addressdetails=1`,
+    { headers: { 'User-Agent': 'StableRoute/1.0' } }
+  )
 
-    const data = await res.json()
-    //console.log(JSON.stringify(data[0], null, 2))
+  const data = await res.json()
 
-    if (!data.length){
-        throw new Error("Address not found")
-    }
+  if (!data.length){
+    throw new Error("Address not found")
+  }
 
-    //convert string to decimal
-    const latitude = parseFloat(data[0].lat)
-    const longitude = parseFloat(data[0].lon)
+  const addressDetails = data[0].address
 
-    //NYC bound box
-    const nyc_coordinateBounds = {
-      maxLatitude: 40.90345,
-      maxLongitude: -73.69875,
-      minLatitude: 40.45733,
-      minLongitude: -74.25380
-    }
+  const nycBoroughs = new Set([
+    "Manhattan",
+    "Brooklyn",
+    "Queens",
+    "Bronx",
+    "The Bronx",
+    "Staten Island",
+  ])
 
-    //bound address within NYC
-    const nycBound = 
-      latitude <= nyc_coordinateBounds.maxLatitude && latitude >= nyc_coordinateBounds.minLatitude &&
-      longitude <= nyc_coordinateBounds.maxLongitude && longitude >= nyc_coordinateBounds.minLongitude
+  const nycCounties = new Set([
+    "New York County",
+    "Kings County",
+    "Queens County",
+    "Bronx County",
+    "Richmond County",
+  ]);
 
-    if (!nycBound){
-        throw new Error("Address is not within New York City")
-    }
+  const borough  = addressDetails.city
+  const county = addressDetails.county
 
-    return { 
-      latitude, longitude 
-    }
+  //check if entered address is a borough or county
+  const isNYC = nycBoroughs.has(borough) || nycCounties.has(county)
+
+  if (!isNYC){
+    throw new Error("Address is not within New York City")
+  }
+
+  //convert string to decimal
+  const latitude  = parseFloat(data[0].lat)
+  const longitude = parseFloat(data[0].lon)
+
+  return { latitude, longitude }
 }
 
 export async function getRoute(route_req : route){
