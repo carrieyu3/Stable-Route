@@ -9,12 +9,62 @@ const __dirname = dirname(__filename);
 const env_path = join(__dirname,'../../.env')
 dotenv.config({path: env_path})
 
-
 export function getDirectionId(direction : String){
   if (direction == "outbound"){
         return 0
   }
   return 1
+}
+
+//Ensure addresses are within NYC
+export async function validateAddress(address: string){
+
+  //geocoding to convert address into coordinates for OTP
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&countrycodes=us&addressdetails=1`,
+    { headers: { 'User-Agent': 'StableRoute/1.0' } }
+  )
+
+  const data = await res.json()
+
+  if (!data.length){
+    throw new Error("Address not found")
+  }
+
+  const addressDetails = data[0].address
+
+  const nycBoroughs = new Set([
+    "Manhattan",
+    "Brooklyn",
+    "Queens",
+    "Bronx",
+    "The Bronx",
+    "Staten Island",
+  ])
+
+  const nycCounties = new Set([
+    "New York County",
+    "Kings County",
+    "Queens County",
+    "Bronx County",
+    "Richmond County",
+  ]);
+
+  const borough  = addressDetails.city
+  const county = addressDetails.county
+
+  //check if entered address is a borough or county
+  const isNYC = nycBoroughs.has(borough) || nycCounties.has(county)
+
+  if (!isNYC){
+    throw new Error("Address is not within New York City")
+  }
+
+  //convert string to decimal
+  const latitude  = parseFloat(data[0].lat)
+  const longitude = parseFloat(data[0].lon)
+
+  return { latitude, longitude }
 }
 
 export async function getRoute(route_req : route){
@@ -106,7 +156,6 @@ export async function busArrival(bus_stop : transit){
   const time_json = JSON.stringify(arrival_in_minutes)
   return time_json
 }
-
 
 export async function busAlert(bus_stop : transit){
   const response = await fetch("https://gtfsrt.prod.obanyc.com/alerts", {

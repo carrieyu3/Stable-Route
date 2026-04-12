@@ -13,12 +13,14 @@
   "license": "MIT",
   "dependencies": {
     "@supabase/supabase-js": "^2.98.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "gtfs-realtime-bindings": "^1.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.3.0",
     "eslint": "^10.0.2",

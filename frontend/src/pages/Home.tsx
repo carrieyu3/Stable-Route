@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import './Home.css'
@@ -15,7 +14,6 @@ import { useEffect, useRef , useState } from "react";
 import { supabase } from "../lib/supabase";
 import Preference from "./Preference";
 
-
 // input for starting destination 
 type destinationInput = {
   origin: string;
@@ -25,8 +23,8 @@ type destinationInput = {
 export default function MainPG(){
 
   const [addressError, setAddressError] = useState("");
-
   const [username, setUsername] = useState("");
+  const [userId, setUserId] = useState("");
   const [preferences, setPreferences] = 
     useState({ 
       highContrast: false,
@@ -36,6 +34,9 @@ export default function MainPG(){
       bus: false, 
       train: false 
     });
+  const [showPanel, setShowPanel] = useState(false);
+  const [searchedOrigin, setSearchedOrigin] = useState("");
+  const [searchedDestination, setSearchedDestination] = useState("");
 
   //database errors - override supabase default message
     const displayAddressError = (error: any) => {
@@ -54,23 +55,48 @@ export default function MainPG(){
 
   //Capture user input and begin Signup validation
   const onSubmit: SubmitHandler<destinationInput> = async (data) => {
-    if (data.origin == data.destination){
-      displayAddressError("Invalid address.");
-    }
-    else if(data.origin == "" || data.destination == ""){
-      displayAddressError("Invalid address");
-    }
-    else{
-      const rawResponse = await fetch('https://localhost:3000', {
-        method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-        body: JSON.stringify({origin: 1, destination: 2})
-    });
-    }
-    return;
+
+      setShowPanel(true); //show immediately after search is clicked for now
+      //change to only within NYC bounds later and if a route is found
+
+      if (data.origin == data.destination || data.origin == "" || data.destination == ""){
+          setAddressError("Invalid address")
+          return
+      }
+
+      // store searched values to display in sidebar
+      setSearchedOrigin(data.origin)
+      setSearchedDestination(data.destination)
+
+      try {
+          //send route request to backend
+          const rawResponse = await fetch('http://localhost:3000/routes/create', {
+              method: 'POST',
+              headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                  user_id: userId,
+                  origin: data.origin,
+                  destination: data.destination,
+                  transportModes: [{ transportMode: "bus" }], //placeholder
+                  numTripPatterns: 5 //display # trip patterns
+              })
+          })
+
+          const result = await rawResponse.json()
+
+          if (result.error){
+              setAddressError(result.error)
+          } 
+          else {
+              console.log(result)
+          }
+      } 
+      catch (e: any) {
+          setAddressError(e.message)
+      }
   }
 
   //get user pref
@@ -81,6 +107,7 @@ export default function MainPG(){
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
+        setUserId(user.id)
 
         //Get username
         const { data } = await supabase
@@ -113,8 +140,6 @@ export default function MainPG(){
     }
     getUserData();
   }, []); //run only on first render to prevent repetitive username retrieval
-
-  
 
   //get user curr location
   const geoControlRef= useRef<maplibregl.GeolocateControl>(null)  
@@ -188,14 +213,68 @@ export default function MainPG(){
                 onChange={() => {setAddressError("") ; clearErrors("destination"); }}
               />
 
+            <button type="submit" className="mt-2 w-full bg-blue-500 text-white py-1.5 rounded-md text-sm font-medium hover:bg-blue-600 transition-colors">Search</button>
+            {addressError && <p className="text-red-500 text-sm">{addressError}</p>}
+
             </div>
 
             <div className="max-w-sm absolute right-6 top-4">
               <a href="/preference" className="w-100 h-100 p-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700 transition-colors">settings</a>
               {/* using <GearFill/> doesnt work for some reason */}
             </div>
-            
           </form>
+
+          {/* White sidebar */}
+          {showPanel && (
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '360px',
+                height: '100vh',
+                background: '#ffffff',
+                zIndex: 10,
+                padding: '24px 20px',
+            }} >
+                
+              {/* Exit white sidebar */}
+              <button onClick={() => setShowPanel(false)}
+                style={{
+                  position: 'absolute',
+                  top: 16,
+                  right: 16,
+                  fontSize: 20,
+                  cursor: 'pointer',
+                  lineHeight: 1,
+                }}
+              > x
+              </button>
+
+              {/* Origin */}
+              <div style={{ marginBottom: 16 }}>
+                <p style={{ fontSize: 11, color: '#888', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Starting Location</p>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <p style={{ fontSize: 15, fontWeight: 600, color: '#111', margin: 0 }}>{searchedOrigin}</p>
+                </div>
+              </div>
+
+              {/* Destination */}
+              <div>
+                <p style={{ fontSize: 11, color: '#888', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Destination</p>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <p style={{ fontSize: 15, fontWeight: 600, color: '#111', margin: 0 }}>{searchedDestination}</p>
+                </div>
+              </div>
+
+              {/* Transition to Route */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 20, marginBottom: 16 }}>
+                <div style={{ flex: 1, height: '1px', background: '#eee' }} />
+                <span style={{ fontSize: 14, color: '#aaa' }}>Route</span>
+                <div style={{ flex: 1, height: '1px', background: '#eee' }} />
+              </div>
+
+            </div>
+          )}
 
         </div>
 
