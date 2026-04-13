@@ -299,3 +299,24 @@ export async function trainAlert(public_code : String){
   const alert_json = JSON.stringify(alert)
   return alert_json
 }
+
+export async function subwayElevatorEscalatorCurrentOutages(){
+  // const mta_url = getTrainUrl(train_stop.publicCode)
+  const response = await fetch("https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fnyct_ene.json")
+  if (!response.ok){
+    throw new Error(`${response.url}: ${response.status} ${response.statusText}`);
+  }
+  const json_res = await response.json()
+  return json_res
+  console.log(json_res)
+  
+}
+
+export async function elevatorEscalatorEquipment(){
+  const response = await fetch("https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fnyct_ene_equipments.json")
+  if (!response.ok){
+    throw new Error(`${response.url}: ${response.status} ${response.statusText}`);
+  }
+  const json_res = await response.json()
+  return json_res
+}

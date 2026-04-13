@@ -1,7 +1,7 @@
 import express from 'express'
 const router = express.Router()
 
-import { getRoute, getTrimmedRoute, busArrival, busAlert, getDirectionId, trainArrival, trainAlert, validateAddress} from './routes-service.ts'
+import { getRoute, getTrimmedRoute, busArrival, busAlert, getDirectionId, trainArrival, trainAlert, validateAddress, subwayElevatorEscalatorCurrentOutages, elevatorEscalatorEquipment} from './routes-service.ts'
 import { uploadRoute } from './routes-queries.ts'
 import { validUserID } from '../users/users-queries.ts'
 import { type transit, type route } from '../interface.ts'
@@ -121,6 +121,27 @@ router.post('/train-alert', async(req,res) =>{
     res.send(alert_json)
 })
 
+router.get('/train-stop-info', async(req,res) => {
+    
+})
+
+router.get('/ee-outage', async(req,res) =>{
+    // if (Object.keys(req.body).length === 0){
+    //     throw new Error("Body Empty")
+    // }
+
+    const json = await subwayElevatorEscalatorCurrentOutages()
+    /*
+    Figure out how to get elevator/escalator id to train station
+    */
+
+    res.send(json)
+})
+
+router.get('/ee-equipment', async(req,res) => {
+    const json = await elevatorEscalatorEquipment()
+    res.send(json)
+})
 
 
 
