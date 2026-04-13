@@ -6,8 +6,27 @@ from sodapy import Socrata
 load_dotenv()
 API_KEY = os.getenv("DATA_NY_KEY")
 
+def zipAllFiles(file_name):
+    # Zip the files that were extracted
+    set = {"agency.txt", "calendar.txt","calendar_dates.txt", "routes.txt", "shapes.txt", "stop_times.txt", "stops.txt", "transfers.txt", "trips.txt"}
+    updated_zip = zipfile.ZipFile(file_name,'w',zipfile.ZIP_DEFLATED)
+    for root,dirs,files in os.walk('.'):
+        for file in files:
+            if file in set:
+                file_path = os.path.join(root, file)
+                updated_zip.write(file_path, os.path.relpath(file_path, '.'))
+    print("Zipped:", file_name)
+
+def deleteUnZipFiles():
+    # delete files after extracting them
+    set = {"agency.txt", "calendar.txt","calendar_dates.txt", "routes.txt", "shapes.txt", "stop_times.txt", "stops.txt", "transfers.txt", "trips.txt"}
+    for root, dirs, files in os.walk('./', topdown=False):
+        for file in files:
+            if file in set:
+                os.remove(os.path.join(root, file))
+    print("Deleted unZipped files\n")
+
 def stopsADA(lines, outfile):
-    # Load in the data of all stops -> make a dictionary for easy look up
     client = Socrata("data.ny.gov", API_KEY)
     data = client.get("39hk-dx4f", limit=50000)
     stops = {}
@@ -19,7 +38,7 @@ def stopsADA(lines, outfile):
         row = stops.get(key)
         if not row:
             continue
-        # Stops are either northbound, southbound, or the parent
+        
         if stop_id[-1] == "N":
             ada_northbound = row["ada_northbound"]
             updated_line = line.rstrip('\n') + ','+str(ada_northbound) +'\n'
@@ -33,59 +52,83 @@ def stopsADA(lines, outfile):
         
     return
 
-def addColumn(lines, outfile, column_name):
+def addColumn(lines, outfile, column_name, mode):
     
     first_line = lines[0]
     first_line = first_line.rstrip('\n') + column_name
     outfile.write(first_line)
-    if outfile.name == "trips.txt":
+    if outfile.name == "trips.txt" or mode == "bus":
         for line in lines[1:]:
-            new_line = line.rstrip('\n') + ",0\n"
+            new_line = ""
+            if mode == "subway":
+                new_line = line.rstrip('\n') + ",0\n"
+            elif mode == "bus":
+                new_line = line.rstrip('\n') + ",1\n" 
             outfile.write(new_line)
+        
     return
-def main():
+
+def subway():
     # extracts the needed files from the zip
     zObject = zipfile.ZipFile('gtfs_subway.zip', 'r')
     zObject.extractall()
     
-    # Add ADA field for stops 
     input_file = "stops.txt"
     output_file = "stops.txt"
     infile = open(input_file, 'r')
     lines = infile.readlines()
     outfile = open(output_file, "w")
-    addColumn(lines, outfile, ",wheelchair_boarding\n")
+    addColumn(lines, outfile, ",wheelchair_boarding\n","subway")
     stopsADA(lines, outfile)
     infile.close()
     outfile.close()
     
-    # Add ADA field for trips
+    
     input_file = "trips.txt"
     output_file = "trips.txt"
     infile = open(input_file, 'r')
     lines = infile.readlines()
     outfile = open(output_file, "w")
-    addColumn(lines, outfile, ",wheelchair_accessible\n")
+    addColumn(lines, outfile, ",wheelchair_accessible\n","subway")
+    infile.close()
+    outfile.close()
+    zipAllFiles("gtfs_subway.zip")
+    deleteUnZipFiles()
+                
+    print("FINISHED SUBWAY\n")
+    return
+
+def Bus(file_name):
+    zObject = zipfile.ZipFile(file_name, 'r')
+    zObject.extractall()
+    input_file = "stops.txt"
+    output_file = "stops.txt"
+    infile = open(input_file, 'r')
+    lines = infile.readlines()
+    outfile = open(output_file, "w")
+    addColumn(lines,outfile,",wheelchair_boarding\n", "bus")
     infile.close()
     outfile.close()
     
-    # Zip the files that were extracted
-    set = {"agency.txt", "calendar.txt","calendar_dates.txt", "routes.txt", "shapes.txt", "stop_times.txt", "stops.txt", "transfers.txt", "trips.txt"}
-    updated_zip = zipfile.ZipFile("gtfs_subway.zip",'w',zipfile.ZIP_DEFLATED)
+    input_file = "trips.txt"
+    output_file = "trips.txt"
+    infile = open(input_file, 'r')
+    lines = infile.readlines()
+    outfile = open(output_file, "w")
+    addColumn(lines,outfile,",wheelchair_accessible\n", "bus")
+    infile.close()
+    outfile.close()
+    
+    return
+def main():
+    subway()
+    set = {"gtfs_b.zip","gtfs_busco.zip","gtfs_bx.zip","gtfs_m.zip","gtfs_q.zip","gtfs_si.zip"}
     for root,dirs,files in os.walk('.'):
         for file in files:
             if file in set:
-                file_path = os.path.join(root, file)
-                updated_zip.write(file_path, os.path.relpath(file_path, '.'))
-    
-    
-    
-    # delete files after extracting them
-    for root, dirs, files in os.walk('./', topdown=False):
-        for file in files:
-            if file in set:
-                os.remove(os.path.join(root, file))
-    print("FINISHED")
+                Bus(file)
+                zipAllFiles(file)
+                deleteUnZipFiles()
     return
 
 
