@@ -300,23 +300,40 @@ export async function trainAlert(public_code : String){
   return alert_json
 }
 
-export async function subwayElevatorEscalatorCurrentOutages(){
+export async function getElevatorOutage(map_of_elevators : Map<string,string>){
   // const mta_url = getTrainUrl(train_stop.publicCode)
   const response = await fetch("https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fnyct_ene.json")
   if (!response.ok){
     throw new Error(`${response.url}: ${response.status} ${response.statusText}`);
   }
   const json_res = await response.json()
-  return json_res
-  console.log(json_res)
+  type info = {which : string, alt_route: string}
+  const arr_of_oos_elevator : info[] = []
+  for (const entity of json_res){
+    if (map_of_elevators.has(entity['equipment'])){
+      const elevator : info = {which : entity['serving'], alt_route: map_of_elevators.get(entity['equipment']) ?? ''}
+      arr_of_oos_elevator.push(elevator)
+    }
+  }
+  const oos_elevator_json = JSON.stringify(arr_of_oos_elevator)
+
+  return oos_elevator_json
+  
   
 }
 
-export async function elevatorEscalatorEquipment(){
+export async function getElevatorID(gtfs_stop_id : string){
   const response = await fetch("https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fnyct_ene_equipments.json")
   if (!response.ok){
     throw new Error(`${response.url}: ${response.status} ${response.statusText}`);
   }
   const json_res = await response.json()
-  return json_res
+  const map_of_elevator_id = new Map<string,string>()
+  for (const entity of json_res) {
+    const stop_id_arr = entity['elevatorsgtfsstopid'].split('/')
+    if (stop_id_arr.includes(gtfs_stop_id)){
+      map_of_elevator_id.set(entity['equipmentno'],entity['alternativeroute'])
+    }
+  }
+  return map_of_elevator_id
 }

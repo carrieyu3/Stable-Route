@@ -1,10 +1,11 @@
 import express from 'express'
 const router = express.Router()
 
-import { getRoute, getTrimmedRoute, busArrival, busAlert, getDirectionId, trainArrival, trainAlert, validateAddress, subwayElevatorEscalatorCurrentOutages, elevatorEscalatorEquipment} from './routes-service.ts'
+import { getRoute, getTrimmedRoute, busArrival, busAlert, getDirectionId, trainArrival, trainAlert, validateAddress, getElevatorOutage, getElevatorID} from './routes-service.ts'
 import { uploadRoute } from './routes-queries.ts'
 import { validUserID } from '../users/users-queries.ts'
 import { type transit, type route } from '../interface.ts'
+import { subway_hashmap } from '../app.ts'
 
 router.post('/create', async (req,res) => {
     try {
@@ -125,21 +126,21 @@ router.get('/train-stop-info', async(req,res) => {
     
 })
 
-router.get('/ee-outage', async(req,res) =>{
-    // if (Object.keys(req.body).length === 0){
-    //     throw new Error("Body Empty")
-    // }
+/*
+id = GTFS ID
+*/
+router.get('/ee-outage/:id', async(req,res) =>{
+    if (!req.params.id){
+        throw new Error("ID missing")
+    }
+    const map_of_elevators = await getElevatorID(req.params.id)
+    const oos_elevator_json = await getElevatorOutage(map_of_elevators)
 
-    const json = await subwayElevatorEscalatorCurrentOutages()
-    /*
-    Figure out how to get elevator/escalator id to train station
-    */
-
-    res.send(json)
+    res.send(oos_elevator_json)
 })
 
 router.get('/ee-equipment', async(req,res) => {
-    const json = await elevatorEscalatorEquipment()
+    const json = await getElevatorID('628')
     res.send(json)
 })
 
