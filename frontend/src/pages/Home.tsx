@@ -3,7 +3,7 @@ import type { SubmitHandler } from "react-hook-form";
 import './Home.css'
 
 //library import needed for map
-import {Map , GeolocateControl } from 'react-map-gl/maplibre';
+import {Map , GeolocateControl, Source, Layer } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 //icons 
@@ -14,6 +14,9 @@ import { useEffect, useRef , useState } from "react";
 import { supabase } from "../lib/supabase";
 import Preference from "./Preference";
 
+import {Box} from "../components/directions.tsx"
+import type {FeatureCollection, LineString } from 'geojson'
+
 // input for starting destination 
 type destinationInput = {
   origin: string;
@@ -21,6 +24,8 @@ type destinationInput = {
 }
 
 export default function MainPG(){
+
+  const [showBox, setShowBox] = useState(false);
 
   const [addressError, setAddressError] = useState("");
   const [username, setUsername] = useState("");
@@ -53,7 +58,7 @@ export default function MainPG(){
       formState: { errors } ,
     } = useForm<destinationInput>({mode: "onSubmit",});
 
-  //Capture user input and begin Signup validation
+  //submission for address 
   const onSubmit: SubmitHandler<destinationInput> = async (data) => {
 
       setShowPanel(true); //show immediately after search is clicked for now
@@ -67,6 +72,7 @@ export default function MainPG(){
       // store searched values to display in sidebar
       setSearchedOrigin(data.origin)
       setSearchedDestination(data.destination)
+
 
       try {
           //send route request to backend
@@ -142,7 +148,57 @@ export default function MainPG(){
   }, []); //run only on first render to prevent repetitive username retrieval
 
   //get user curr location
-  const geoControlRef= useRef<maplibregl.GeolocateControl>(null)  
+  const geoControlRef= useRef<maplibregl.GeolocateControl>(null)  ;
+
+  const geojsonData : FeatureCollection<LineString> = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type:"Feature",
+        properties: {},
+  geometry: {
+    type: 'LineString',
+    coordinates: [
+  [-73.97559, 40.59103],
+  [-73.97575, 40.59113],
+  [-73.97577, 40.59114],
+  [-73.97584, 40.59118],
+  [-73.97589, 40.59122],
+  [-73.97591, 40.59123],
+  [-73.97645, 40.59155],
+  [-73.97646, 40.59156],
+  [-73.97659, 40.59163],
+  [-73.97676, 40.59173],
+  [-73.97676, 40.59174],
+  [-73.97697, 40.59187],
+  [-73.97698, 40.59187],
+  [-73.97709, 40.59194],
+  [-73.97718, 40.592],
+  [-73.97722, 40.59202],
+  [-73.97766, 40.59229],
+  [-73.97768, 40.59231],
+  [-73.97776, 40.59235],
+  [-73.97784, 40.5924],
+  [-73.97787, 40.59242],
+  [-73.97795, 40.59247],
+  [-73.97814, 40.59258],
+  [-73.97828, 40.59267],
+  [-73.97823, 40.59272]
+        ]
+      }
+    }
+  ]
+
+} as const;
+
+const lineLayer = {
+  id: 'line-layer',
+  type: 'line',
+  paint: {
+    'line-color': '#007cbf',
+    'line-width': 8
+  }
+} as const;
 
   useEffect(()=>{
     geoControlRef.current?.trigger()
@@ -153,7 +209,7 @@ export default function MainPG(){
 
         <div className="flex min-h-full flex-col justify-center absolute">
 
-        { /* insert map here */}
+        { /* map displays depending if user wants high contrast or not */}
         {preferences.highContrast ? 
         // true 
           <Map
@@ -172,14 +228,23 @@ export default function MainPG(){
                 initialViewState={{
                   longitude: -74.0060,
                   latitude: 40.7128,
-                  zoom: 12
+                  zoom: 12,
 
                 }}
                 style={{width: '100vw', height: '100vh'}}
                 mapStyle="src/assets/default-map.json"
-              />
-        }
-          
+              >
+
+                <Source id="my-data" type="geojson" data={geojsonData}>
+                  <Layer {...lineLayer} />
+                </Source>
+
+              </Map>
+        } 
+        
+        {/* add the lines layer to draw route  */}
+
+        {/* {origin && destination != '' ? Directions : null} */}
 
           {/* below gives us the user location , we want to feed it into start point */}
           {/* <GeolocateControl showUserLocation={true} trackUserLocation={true}/> */}
@@ -188,7 +253,7 @@ export default function MainPG(){
         { /* input for destinaton */}
           <form onSubmit={handleSubmit(onSubmit)}>
             
-            <div className="mx-auto w-full max-w-sm absolute left-6 top-4 flex flex-col">  
+            <div className="w-full max-w-sm absolute left-6 top-4 flex flex-col">  
 
               {/* starting point input */}
               <input
@@ -217,6 +282,8 @@ export default function MainPG(){
             {addressError && <p className="text-red-500 text-sm">{addressError}</p>}
 
             </div>
+
+            <Box isVisible={showBox} />
 
             <div className="max-w-sm absolute right-6 top-4">
               <a href="/preference" className="w-100 h-100 p-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700 transition-colors">settings</a>
