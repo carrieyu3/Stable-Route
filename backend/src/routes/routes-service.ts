@@ -108,8 +108,15 @@ export function getTrimmedRoute(tripPatterns: any[]) {
         mode: leg.mode,
         distance: leg.distance,
         duration: leg.duration,
-        fromPlace: leg.fromPlace.name,
-        toPlace: leg.toPlace.name
+        fromPlaceName: leg.fromPlace.name,
+        fromPlaceInfo: (leg.fromPlace.quay) ? {
+          fromPlaceStopID: (leg.fromPlace.quay) ? leg.fromPlace.quay.id : null,
+          direction: (leg.serviceJourney) ? leg.serviceJourney.directionType : null ,
+          publicCode: (leg.line) ? leg.line.publicCode : null,
+          hexColor: (leg.line) ? leg.line.presentation.colour : null,
+        } : null,
+        toPlace: leg.toPlace.name,
+        draw: leg.pointsOnLink.points
       }
     })
 
