@@ -3,7 +3,7 @@ const router = express.Router()
 
 import { getRoute, getTrimmedRoute, busArrival, busAlert, getDirectionId, trainArrival, trainAlert, validateAddress, getElevatorOutage, getElevatorID} from './routes-service.ts'
 import { uploadRoute } from './routes-queries.ts'
-import { validUserID } from '../users/users-queries.ts'
+import { getUserPreferences, validUserID } from '../users/users-queries.ts'
 import { type transit, type route } from '../interface.ts'
 import { subway_hashmap } from '../app.ts'
 
@@ -122,9 +122,6 @@ router.post('/train-alert', async(req,res) =>{
     res.send(alert_json)
 })
 
-router.get('/train-stop-info', async(req,res) => {
-    
-})
 
 /*
 id = GTFS ID
@@ -139,11 +136,18 @@ router.get('/ee-outage/:id', async(req,res) =>{
     res.send(oos_elevator_json)
 })
 
-router.get('/ee-equipment', async(req,res) => {
-    const json = await getElevatorID('628')
-    res.send(json)
-})
 
+router.get('/test', async(req,res) =>{
+    if (Object.keys(req.body).length === 0){
+        throw new Error("Body Empty")
+    }else if (!req.body.hasOwnProperty("user_id")){
+        throw new Error("Field is missing")
+    }
+    const preference_array = await getUserPreferences(req.body.user_id)
+    console.log(preference_array)
+
+    res.send({})
+})
 
 
 export default router
