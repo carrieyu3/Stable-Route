@@ -31,10 +31,11 @@ export async function validateAddress(address: string){
     throw new Error("Address not found")
   }
 
-  const addressDetails = data[0].address
+  const addressDetails = data[0].address //best match
 
   const nycBoroughs = new Set([
     "Manhattan",
+    "New York",
     "Brooklyn",
     "Queens",
     "Bronx",
