@@ -12,9 +12,8 @@ import { useEffect, useRef , useState } from "react";
 
 //supabase
 import { supabase } from "../lib/supabase";
-import Preference from "./Preference";
 
-import {Box} from "../components/directions.tsx"
+import {Box, DisplayRoute} from "../components/directions.tsx"
 import type {FeatureCollection, LineString } from 'geojson'
 
 // input for starting destination 
@@ -42,6 +41,27 @@ export default function MainPG(){
   const [showPanel, setShowPanel] = useState(false);
   const [searchedOrigin, setSearchedOrigin] = useState("");
   const [searchedDestination, setSearchedDestination] = useState("");
+  const [routeData, setRoute] = useState([{
+    duration: null,
+    distance: null,
+    legs: [
+      {
+        mode: null,
+        distance: null,
+        duration: null,
+        fromPlaceName: null,
+        fromPlaceInfo: {
+          fromPlaceStopID: null,
+          direction: null,
+          publicCode: null,
+          hexColor: null,
+        },
+        toPlace: null,
+        draw: null
+      }
+    ]
+
+  }])
 
   //database errors - override supabase default message
     const displayAddressError = (error: any) => {
@@ -86,8 +106,8 @@ export default function MainPG(){
                   user_id: userId,
                   origin: data.origin,
                   destination: data.destination,
-                  transportModes: [{ transportMode: "bus" }], //placeholder
-                  numTripPatterns: 5 //display # trip patterns
+                  transportModes: [{ transportMode: "metro" }], //placeholder
+                  numTripPatterns: 1 //display # trip patterns
               })
           })
 
@@ -98,10 +118,14 @@ export default function MainPG(){
           } 
           else {
               console.log(result)
+              setRoute(result)
+
           }
       } 
-      catch (e: any) {
+      catch (e: unknown) {
+        if (e instanceof Error){
           setAddressError(e.message)
+        }
       }
   }
 
@@ -339,6 +363,9 @@ const lineLayer = {
                 <span style={{ fontSize: 14, color: '#aaa' }}>Route</span>
                 <div style={{ flex: 1, height: '1px', background: '#eee' }} />
               </div>
+
+                <DisplayRoute routeData={routeData} origin={searchedOrigin} destination={searchedDestination}></DisplayRoute>
+
 
             </div>
           )}

@@ -1,63 +1,217 @@
 import React, { useEffect, useState } from "react";
 import { ArrowLeft , ArrowRight } from 'react-bootstrap-icons';
 
-const StartDisplay = () => {
+interface routeLeg {
+        mode: string,
+        distance: number,
+        duration: number,
+        fromPlaceName: string,
+        fromPlaceInfo: {
+          fromPlaceStopID: string,
+          direction: string,
+          publicCode: string,
+          hexColor: string,
+        },
+        toPlace: string,
+        draw: string
+}
+interface routeInfo {   
+  duration: number,
+    distance: number,
+    legs : routeLeg[]
+}
+
+const getTime = (seconds : number) => {
+  const formatTime = new Intl.DateTimeFormat("en-US", {
+  timeZone: "America/New_York",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: true,
+  });
+  const currentTime = new Date()
+  const addSeconds = new Date(currentTime.getTime() + (seconds * 1000))
+  const nycTime = formatTime.format(addSeconds);
+  return nycTime
+}
+
+const SecondsToMinutes = (duration : number) => {
+  return Math.floor(duration / 60)
+} 
+
+const Direction = (dire : string) => {
+  return (dire == 'outbound' ? 'Uptown' : 'Downtown')
+} 
+const StartDisplay = ({fromPlace}:{fromPlace : string}) => {
   return (
     <>
-      <p><b>Starting location</b>: [originHere]</p>
+      <p><b>Starting location</b>: {fromPlace}</p>
       <br/>
     </>
   )
 }
 
-const EndDisplay = () => {
+const EndDisplay = ({destination}:{destination : string}) => {
   return (
     <>
     <br/>
-      <p><b>Ending location</b>: [detinationHere]</p>
+      <p><b>Ending location</b>: {destination}</p>
     </>
   )
 }
 
-const WalkRoute = () => {
+
+const WalkRoute = ({leg, origin, destination, startSeconds, endSeconds} : {leg : routeLeg, origin : string, destination : string, startSeconds:number, endSeconds:number}) => {
+  const startTime = getTime(startSeconds)
+  const endTime = getTime(endSeconds)
+  const fromPlace = (leg.fromPlaceName == "Origin") ? origin : leg.fromPlaceName
+  const toPlace = (leg.toPlace == "Destination") ? destination : leg.toPlace
   return (
     <>
       <div style={{color: "#000", width: "90%" , borderLeft: "6px dotted #000" , padding: "9px"}}>
-        <p style={{fontSize: "1.2em" , fontWeight: "bold"}}>Walk from PointA to PointB</p>
-        <p>x:xx to x:xx</p>
-        <p>[time] minutes</p>
+        <p style={{fontSize: "1.2em" , fontWeight: "bold"}}>Walk from {fromPlace} to {toPlace}</p>
+        <p>{startTime} to {endTime}</p>
+        <p>{SecondsToMinutes(leg.duration)} minutes</p>
       </div>
     </>
   )
 }
 
-const TrainRoute = () => {
+const TrainRoute = ({leg, origin, destination, startSeconds, endSeconds} : {leg : routeLeg, origin : string, destination : string,startSeconds:number, endSeconds:number}) => {
+  const [trainArrival, setTrainArrival] = useState('')
+  const startTime = getTime(startSeconds)
+  const endTime = getTime(endSeconds)
+  const fromPlace = (leg.fromPlaceName == "Origin") ? origin : leg.fromPlaceName
+  const toPlace = (leg.toPlace == "Destination") ? destination : leg.toPlace
+  useEffect(() => {
+    const getTrainTime = async() => {
+      const response = await fetch('http://localhost:3000/routes/train-arrival', {
+        method: 'POST',
+        headers : {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          publicCode : leg.fromPlaceInfo.publicCode,
+          stopId : leg.fromPlaceInfo.fromPlaceStopID
+        })
+      })
+      const response_json = await response.json()
+      let string = ''
+      for (const min of response_json){
+        string += min.toString() + ', '
+      }
+      setTrainArrival(string)
+      console.log(response_json)
+    }
+    if (leg.fromPlaceInfo.publicCode && leg.fromPlaceInfo.fromPlaceStopID) {
+      getTrainTime()
+    }
+    // Runs every minute , can remove this if you want
+    const intervalId = setInterval(() => {
+      if (leg.fromPlaceInfo.publicCode && leg.fromPlaceInfo.fromPlaceStopID) {
+        getTrainTime();
+      }
+    }, 60000);
+    return () => clearInterval(intervalId);
+  }, [leg.fromPlaceInfo.publicCode, leg.fromPlaceInfo.fromPlaceStopID])
+  
+
+
   return (
     <>
       <div style={{color: "#000", width: "90%" , borderLeft: "6px solid #000" , padding: "9px"}}>
-        <p style={{fontSize: "1.2em" , fontWeight: "bold"}}>Take the [train] train from PointA to PointB</p>
-        <p>Train | Uptown or downtown?</p>
-        <p>x:xx to x:xx</p>
-        <p>[time] minutes</p>
-        <p>Next train arrives in: xx </p>
+        <p style={{fontSize: "1.2em" , fontWeight: "bold"}}>Take the {leg.fromPlaceInfo.publicCode} train from {fromPlace} to {toPlace}</p>
+        <p>Train | {Direction(leg.fromPlaceInfo.direction)}</p>
+        <p>{startTime} to {endTime}</p>
+        <p>{SecondsToMinutes(leg.duration)} minutes</p>
+        <p>Next train arrives in: {trainArrival} minutes</p>
       </div>
     </>
   )
 }
 
-const BusRoute = () => {
+const BusRoute = ({leg, origin, destination, startSeconds, endSeconds} : {leg : routeLeg, origin : string, destination : string, startSeconds:number, endSeconds:number}) => {
+  const [BusArrival,setBusArrival] = useState('')
+  const startTime = getTime(startSeconds)
+  const endTime = getTime(endSeconds)
+  const fromPlace = (leg.fromPlaceName == "Origin") ? origin : leg.fromPlaceName
+  const toPlace = (leg.toPlace == "Destination") ? destination : leg.toPlace
+  useEffect(() => {
+    const getTrainTime = async() => {
+      const response = await fetch('http://localhost:3000/routes/bus-arrival', {
+        method: 'POST',
+        headers : {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          publicCode : leg.fromPlaceInfo.publicCode,
+          stopId : leg.fromPlaceInfo.fromPlaceStopID
+        })
+      })
+      const response_json = await response.json()
+      let string = ''
+      for (const min of response_json){
+        string += min.toString() + ', '
+      }
+      setBusArrival(string)
+      console.log(response_json)
+    }
+    if (leg.fromPlaceInfo.publicCode && leg.fromPlaceInfo.fromPlaceStopID) {
+      getTrainTime()
+    }
+    // Runs every minute , can remove this if you want
+    const intervalId = setInterval(() => {
+      if (leg.fromPlaceInfo.publicCode && leg.fromPlaceInfo.fromPlaceStopID) {
+        getTrainTime();
+      }
+    }, 60000);
+    return () => clearInterval(intervalId);
+  }, [leg.fromPlaceInfo.publicCode, leg.fromPlaceInfo.fromPlaceStopID])
   return (
     <>
       <div style={{color: "#000", width: "90%" , borderLeft: "6px dashed #000" , padding: "9px"}}>
-        <p style={{fontSize: "1.2em" , fontWeight: "bold"}}>Take the [bus] bus from PointA to PointB</p>
-        <p>Bus | Uptown or downtown?</p>
-        <p>x:xx to x:xx</p>
-        <p>[time] minutes</p>
-        <p>Next bus arrives in: xx </p>
+        <p style={{fontSize: "1.2em" , fontWeight: "bold"}}>Take the {leg.fromPlaceInfo.publicCode} bus from {fromPlace} to {toPlace}</p>
+        <p>Bus | {Direction(leg.fromPlaceInfo.direction)}</p>
+        <p>{startTime} to {endTime}</p>
+        <p>{SecondsToMinutes(leg.duration)} minutes</p>
+        <p>Next bus arrives in: {BusArrival} minutes</p>
       </div>
     </>
   )
 }
+
+export const DisplayRoute = (props: {routeData : routeInfo[], origin : string, destination : string}) => {
+  const {routeData , origin, destination} = props
+
+  return (
+    <div>
+      {/* Map each route */}
+      {routeData?.map((route : routeInfo, index : number) => {
+        let currentDuration = 0
+        return (
+          <div key={index}>
+            <StartDisplay fromPlace={origin}></StartDisplay>
+            {/* Map each leg of the route */}
+            {route.legs.map((leg : routeLeg,idx : number) => {
+              const startSeconds = currentDuration
+              currentDuration += leg.duration
+              const endSeconds = currentDuration
+              return(
+              <div key={idx}>
+                {leg.mode == 'foot' ? <WalkRoute leg={leg} origin={origin} destination={destination} startSeconds={startSeconds} endSeconds={endSeconds}></WalkRoute> : null}
+                {leg.mode == 'metro' ? <TrainRoute leg={leg} origin={origin} destination={destination} startSeconds={startSeconds} endSeconds={endSeconds}></TrainRoute> : null}
+                {leg.mode == 'bus' ? <BusRoute leg={leg} origin={origin} destination={destination} startSeconds={startSeconds} endSeconds={endSeconds}></BusRoute> : null}
+              </div>
+              )
+            })}
+            <EndDisplay destination={destination}></EndDisplay>
+          </div>
+        )
+      })}
+      <br/>
+    </div>
+  )
+}
+
 
 type BoxVIsible = {
   isVisible: boolean;
@@ -77,11 +231,6 @@ export const Box: React.FC<BoxVIsible> = ({ isVisible }) => {
         <div style={{ padding: "10px", flex: 1 }}>
 
           <div style={{overflowY: "scroll" , width: "95%"}}>
-            {StartDisplay()}
-            {WalkRoute()}
-            {TrainRoute()}
-            {BusRoute()}
-            {EndDisplay()}
 
             {/* once i have the below working, we wont need the above */}
             {/* {DisplayRoute()} */}
