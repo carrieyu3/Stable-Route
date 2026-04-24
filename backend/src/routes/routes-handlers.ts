@@ -49,7 +49,7 @@ router.post('/create', async (req,res) => {
     "directionId": "outbound"
 }
 */
-router.post('/bus-arrival', async(req,res) => {
+router.post('/bus-info', async(req,res) => {
     if (Object.keys(req.body).length === 0){
         throw new Error("Body Empty")
     }
@@ -65,35 +65,19 @@ router.post('/bus-arrival', async(req,res) => {
     }
 
     const time = await busArrival(bus_stop)
-    res.send(time)
+    const alert = await busAlert(bus_stop)
+    const merged = {...time,...alert}
+    const merged_json = JSON.stringify(merged)
+    res.send(merged_json)
 })
-
-router.post('/bus-alert', async(req,res) => {
-    if (Object.keys(req.body).length === 0){
-        throw new Error("Body Empty")
-    }
-    if (!req.body.hasOwnProperty("publicCode") || !req.body.hasOwnProperty("stopId")  || !req.body.hasOwnProperty("directionId")){
-        throw new Error("Required field(s) missing")
-    }
-    const direction = getDirectionId(req.body.directionId)
-
-    const bus_stop : transit = {
-        publicCode: req.body.publicCode,
-        stopId: req.body.stopId,
-        directionId: direction
-    }
-    const alerts = await busAlert(bus_stop)
-    res.send(alerts)
-})
-
 
 /*
 {
     "publicCode" : "6",
-    "id": "subway:___"
+    "stopId": "subway:___"
 }
 */
-router.post('/train-arrival', async(req,res) => {
+router.post('/train-info', async(req,res) => {
     if (Object.keys(req.body).length === 0){
         throw new Error("Body Empty")
     }
@@ -107,19 +91,10 @@ router.post('/train-arrival', async(req,res) => {
         stopId : stop_id[1]
     }
     const json_arrivals = await trainArrival(train_stop)
-    res.send(json_arrivals)
-})
-
-
-router.post('/train-alert', async(req,res) =>{
-    if (Object.keys(req.body).length === 0){
-        throw new Error("Body Empty")
-    }else if (!req.body.hasOwnProperty("publicCode")){
-        throw new Error("Field is missing")
-    }
-
-    const alert_json = await trainAlert(req.body.publicCode)
-    res.send(alert_json)
+    const json_alerts = await trainAlert(train_stop.publicCode)
+    const merged = {...json_arrivals,...json_alerts}
+    const merged_json = JSON.stringify(merged)
+    res.send(merged_json)
 })
 
 

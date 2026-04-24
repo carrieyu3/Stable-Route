@@ -1,6 +1,6 @@
 import {graphql_url, query} from './routes-variables.ts'
 import GtfsRealtimeBindings from "gtfs-realtime-bindings";
-import { type route , type transit, type busAlert, type busPlannedWork} from '../interface.ts';
+import { type route , type transit, type busAlert, type busPlannedWork, type subwayAlerts} from '../interface.ts';
 import dotenv from 'dotenv'
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -161,8 +161,9 @@ export async function busArrival(bus_stop : transit){
       });
     }
   });
-  const time_json = JSON.stringify(arrival_in_minutes)
-  return time_json
+  arrival_in_minutes.sort()
+  const time_object = {arrival : arrival_in_minutes}
+  return time_object
 }
 
 export async function busAlert(bus_stop : transit){
@@ -207,9 +208,8 @@ export async function busAlert(bus_stop : transit){
     }
       
   });
-  const merged = {...bus_stop_alert, ...bus_stop_planned_work}
-  const merged_json = JSON.stringify(merged)
-  return merged_json
+  const merged_alerts = {...bus_stop_alert, ...bus_stop_planned_work}
+  return merged_alerts
 }
 
 const orange_trains = new Set(["B","D","F","M","FS"])
@@ -266,9 +266,9 @@ export async function trainArrival(train_stop : transit){
       })
     }
   })
-  
-  const time_json = JSON.stringify(arrival_in_minutes)
-  return time_json
+  const arrival_object = {arrival: arrival_in_minutes}
+  // const time_json = JSON.stringify(arrival_in_minutes)
+  return arrival_object
 }
 
 export async function trainAlert(public_code : String){
@@ -281,11 +281,8 @@ export async function trainAlert(public_code : String){
     new Uint8Array(buffer)
   );
 
-  interface alert_interface {
-    header: String
-    description: String
-  }
-  const alert : alert_interface[] = []
+  const alert : subwayAlerts[] = []
+
   feed.entity.forEach((entity) => {
     entity.alert?.informedEntity?.forEach((route) => {
       if (route.routeId && route.routeId == public_code){
@@ -294,9 +291,9 @@ export async function trainAlert(public_code : String){
         
         const current_time = new Date() 
         if ((start_num < current_time.valueOf() && end_num > current_time.valueOf()) || (start_num < current_time.valueOf() && end_num == 0)){
-          const this_train_alert : alert_interface = {
-            header: entity.alert?.headerText?.translation?.at(0)?.text ?? "",
-            description: entity.alert?.descriptionText?.translation?.at(0)?.text ?? ""
+          const this_train_alert : subwayAlerts = {
+            alert_header: entity.alert?.headerText?.translation?.at(0)?.text ?? "",
+            alert_description: entity.alert?.descriptionText?.translation?.at(0)?.text ?? ""
           }
           alert.push(this_train_alert)
         }
@@ -304,8 +301,8 @@ export async function trainAlert(public_code : String){
       }
     })
   })
-  const alert_json = JSON.stringify(alert)
-  return alert_json
+  const alert_object = {alert_array: alert}
+  return alert_object
 }
 
 export async function getElevatorOutage(map_of_elevators : Map<string,string>){
