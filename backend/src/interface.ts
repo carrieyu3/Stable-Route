@@ -16,6 +16,11 @@ export interface transit {
     directionId ?: Number
 }
 
+export interface subwayAlerts {
+  alert_header: string
+  alert_description: string
+}
+
 export interface busAlert {
   alert_description: String
 }
