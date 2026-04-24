@@ -182,6 +182,7 @@ export default function MainPG(){
         properties: {},
   geometry: {
     type: 'LineString',
+    // below are test coords, we need to feed data into here
     coordinates: [
   [-73.97559, 40.59103],
   [-73.97575, 40.59113],
@@ -245,7 +246,13 @@ const lineLayer = {
               }}
               style={{width: '100vw', height: '100vh'}}
               mapStyle="src/assets/high-contrast-map.json"
-            />
+            >
+
+              <Source id="my-data" type="geojson" data={geojsonData}>
+                  <Layer {...lineLayer} />
+              </Source>
+
+            </Map>
         : 
           // false
           <Map
@@ -270,8 +277,8 @@ const lineLayer = {
 
         {/* {origin && destination != '' ? Directions : null} */}
 
-          {/* below gives us the user location , we want to feed it into start point */}
-          {/* <GeolocateControl showUserLocation={true} trackUserLocation={true}/> */}
+        {/* below gives us the user location , we want to feed it into start point */}
+        {/* <GeolocateControl showUserLocation={true} trackUserLocation={true}/> */}
 
             
         { /* input for destinaton */}
@@ -364,7 +371,10 @@ const lineLayer = {
                 <div style={{ flex: 1, height: '1px', background: '#eee' }} />
               </div>
 
-                <DisplayRoute routeData={routeData} origin={searchedOrigin} destination={searchedDestination}></DisplayRoute>
+                <div style={{overflowY: "scroll" , maxHeight: "100vh" , scrollbarWidth:"none"}} > 
+                  <DisplayRoute routeData={routeData} origin={searchedOrigin} destination={searchedDestination}></DisplayRoute>
+                </div>
+                
 
 
             </div>
