@@ -1,10 +1,11 @@
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
+import { Link } from "react-router-dom";
 import './Home.css'
 
 //library import needed for map
 import {Map, Source, Layer } from 'react-map-gl/maplibre';
-import 'maplibre-gl/dist/maplibre-gl.css';
+
 
 //icons 
 // import { GearFill , GeoAltFill } from 'react-bootstrap-icons';
@@ -289,7 +290,7 @@ const lineLayer = {
             <Box isVisible={showBox} />
 
             <div className="max-w-sm absolute right-6 top-4">
-              <a href="/preference" className="w-100 h-100 p-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700 transition-colors">settings</a>
+              <Link to="/preference" className="w-100 h-100 p-2 bg-slate-800 text-white text-sm font-medium rounded-md hover:bg-slate-700 transition-colors">settings</Link>
               {/* using <GearFill/> doesnt work for some reason */}
             </div>
           </form>
