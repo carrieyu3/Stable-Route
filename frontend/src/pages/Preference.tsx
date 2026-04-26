@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import { Link } from "react-router-dom";
 import './Preference.css'
 
 export default function Preference() {
@@ -277,11 +278,11 @@ export default function Preference() {
             </div>
 
             <p className="fixed bottom-13 right-10">
-                <a href="/home" className="font-semibold text-blue-500 hover:text-blue-300">Back to Home</a>
+                <Link to="/home" className="font-semibold text-blue-500 hover:text-blue-300">Back to Home</Link>
             </p>
 
             <p className="fixed bottom-6 right-10">
-                <a href="/" className="font-semibold text-blue-500 hover:text-blue-300">Logout</a>
+                <Link to="/" className="font-semibold text-blue-500 hover:text-blue-300">Logout</Link>
             </p>
 
           </div>
