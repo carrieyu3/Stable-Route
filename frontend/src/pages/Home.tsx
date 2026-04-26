@@ -217,7 +217,7 @@ const lineLayer = {
 
               }}
               style={{width: '100vw', height: '100vh'}}
-              mapStyle="src/assets/high-contrast-map.json"
+              mapStyle="/high-contrast-map.json"
             >
 
               <Source id="my-data" type="geojson" data={geojsonData}>
@@ -235,7 +235,7 @@ const lineLayer = {
 
                 }}
                 style={{width: '100vw', height: '100vh'}}
-                mapStyle="src/assets/default-map.json"
+                mapStyle="/default-map.json"
               >
 
                 <Source id="my-data" type="geojson" data={geojsonData}>
