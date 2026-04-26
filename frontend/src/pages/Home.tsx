@@ -3,7 +3,7 @@ import type { SubmitHandler } from "react-hook-form";
 import './Home.css'
 
 //library import needed for map
-import {Map , GeolocateControl, Source, Layer } from 'react-map-gl/maplibre';
+import {Map, Source, Layer } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 //icons 
@@ -13,7 +13,7 @@ import { useEffect, useRef , useState } from "react";
 //supabase
 import { supabase } from "../lib/supabase";
 
-import {Box, DisplayRoute} from "../components/directions.tsx"
+import {Box, DisplayRoute, type routeInfo} from "../components/directions.tsx"
 import type {FeatureCollection, LineString } from 'geojson'
 
 // input for starting destination 
@@ -24,10 +24,10 @@ type destinationInput = {
 
 export default function MainPG(){
 
-  const [showBox, setShowBox] = useState(false);
+  const [showBox] = useState(false);
 
   const [addressError, setAddressError] = useState("");
-  const [username, setUsername] = useState("");
+  const [,setUsername] = useState("");
   const [userId, setUserId] = useState("");
   const [preferences, setPreferences] = 
     useState({ 
@@ -41,41 +41,13 @@ export default function MainPG(){
   const [showPanel, setShowPanel] = useState(false);
   const [searchedOrigin, setSearchedOrigin] = useState("");
   const [searchedDestination, setSearchedDestination] = useState("");
-  const [routeData, setRoute] = useState([{
-    duration: null,
-    distance: null,
-    legs: [
-      {
-        mode: null,
-        distance: null,
-        duration: null,
-        fromPlaceName: null,
-        fromPlaceInfo: {
-          fromPlaceStopID: null,
-          direction: null,
-          publicCode: null,
-          hexColor: null,
-        },
-        toPlace: null,
-        draw: null
-      }
-    ]
-
-  }])
-
-  //database errors - override supabase default message
-    const displayAddressError = (error: any) => {
-        if (error.message.includes("Invalid address")) {
-            setAddressError("Invalid address");
-        }
-    };
+  const [routeData, setRoute] = useState<routeInfo[]>([]);
     
     //create form and track input data upon submission
     const {
       register,
       handleSubmit,
       clearErrors,
-      formState: { errors } ,
     } = useForm<destinationInput>({mode: "onSubmit",});
 
   //submission for address 
@@ -374,9 +346,6 @@ const lineLayer = {
                 <div style={{overflowY: "scroll" , maxHeight: "100vh" , scrollbarWidth:"none"}} > 
                   <DisplayRoute routeData={routeData} origin={searchedOrigin} destination={searchedDestination}></DisplayRoute>
                 </div>
-                
-
-
             </div>
           )}
 

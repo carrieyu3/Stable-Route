@@ -15,7 +15,8 @@ interface routeLeg {
         toPlace: string,
         draw: string
 }
-interface routeInfo {   
+
+export interface routeInfo {   
   duration: number,
     distance: number,
     legs : routeLeg[]
