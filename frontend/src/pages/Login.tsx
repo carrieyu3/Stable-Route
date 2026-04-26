@@ -3,6 +3,7 @@ import type { SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
+import { Link } from "react-router-dom";
 import './Login.css'
 
 //user input submitted from login
@@ -111,9 +112,8 @@ export default function Login() {
                     
                     { /* Link to Sign Up page */}
                     <p className="mt-5 text-center">
-                        <a href="/Signup" className="font-semibold text-blue-500 hover:text-blue-300">Create an Account</a>
+                        <Link to="/signup" className="font-semibold text-blue-500 hover:text-blue-300">Create an Account</Link>
                     </p>
-
                 </div>
             </div>  
         </>

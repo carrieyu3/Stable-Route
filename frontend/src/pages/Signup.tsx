@@ -3,6 +3,7 @@ import type { SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
+import { Link } from "react-router-dom";
 import './Signup.css'
 
 //user input submitted from signup
@@ -98,7 +99,7 @@ export default function Signup() {
         <>
             <div className="flex min-h-full flex-col justify-center px-6 py-2 lg:px-8">
                 <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-                    <img alt="Stable Route logo" src="src/assets/earth.png" className="mx-auto h-17 w-auto"/>
+                    <img alt="Stable Route logo" src="/earth.png" className="mx-auto h-17 w-auto"/>
                     <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-black">Sign up and Join today!</h2>
                 </div>
 
@@ -206,7 +207,7 @@ export default function Signup() {
                     
                     { /* Link to Sign In page */}
                     <p className="mt-5 text-center">
-                        Already have an account? <a href="/" className="font-semibold text-blue-500 hover:text-blue-300">Sign In</a>
+                        Already have an account? <Link to="/" className="font-semibold text-blue-500 hover:text-blue-300">Sign In</Link>
                     </p>
 
                 </div>
