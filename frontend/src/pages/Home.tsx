@@ -51,6 +51,7 @@ export default function MainPG(){
     register,
     handleSubmit,
     clearErrors,
+    reset, //clear prev input fields
   } = useForm<destinationInput>({mode: "onSubmit",});
 
   //submission for address 
@@ -283,16 +284,17 @@ export default function MainPG(){
             }}>
                             
               {/* Exit white sidebar */}
-              <button onClick={() => setRoute([])}
+              <button onClick={() => { setRoute([]); setDrawnRoute([]); setSearchedOrigin(""); setSearchedDestination(""); reset(); }}
                 style={{
                   position: 'absolute',
                   top: 16,
                   right: 16,
-                  fontSize: 20,
+                  fontSize: 15,
                   cursor: 'pointer',
                   lineHeight: 1,
+                  color: 'red'
                 }}
-              > x
+              > Exit Route
               </button>
 
               {/* Origin */}
