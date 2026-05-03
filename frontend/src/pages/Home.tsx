@@ -39,10 +39,10 @@ export default function MainPG(){
       train: false 
     });
 
-  const [showPanel, setShowPanel] = useState(false);
   const [searchedOrigin, setSearchedOrigin] = useState("");
   const [searchedDestination, setSearchedDestination] = useState("");
   const [routeData, setRoute] = useState<routeInfo[]>([]);
+  const showPanel = routeData.length > 0;
     
   //create form and track input data upon submission
   const {
@@ -54,8 +54,12 @@ export default function MainPG(){
   //submission for address 
   const onSubmit: SubmitHandler<destinationInput> = async (data) => {
 
-      setShowPanel(true); //show immediately after search is clicked for now
-      //change to only within NYC bounds later and if a route is found
+      setRoute([]); //clear prev route
+
+      if (data.origin == data.destination || data.origin == "" || data.destination == "") {
+        setAddressError("Invalid address")
+        return
+      }
 
       if (data.origin == data.destination || data.origin == "" || data.destination == ""){
           setAddressError("Invalid address")
@@ -89,7 +93,6 @@ export default function MainPG(){
               setAddressError(result.error)
           } 
           else {
-              console.log(result)
               setRoute(result)
           }
       } 
@@ -310,7 +313,7 @@ const lineLayer = {
             }}>
                             
               {/* Exit white sidebar */}
-              <button onClick={() => setShowPanel(false)}
+              <button onClick={() => setRoute([])}
                 style={{
                   position: 'absolute',
                   top: 16,
