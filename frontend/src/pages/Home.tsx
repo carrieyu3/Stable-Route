@@ -1,10 +1,11 @@
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import { Link } from "react-router-dom";
+import polyline from '@mapbox/polyline';
 import './Home.css'
 
 //library import needed for map
-import {Map, Source, Layer } from 'react-map-gl/maplibre';
+import {Map, Source, Layer} from 'react-map-gl/maplibre';
 
 //icons 
 //import { GearFill , GeoAltFill } from 'react-bootstrap-icons';
@@ -43,6 +44,7 @@ export default function MainPG(){
   const [searchedDestination, setSearchedDestination] = useState("");
   const [routeData, setRoute] = useState<routeInfo[]>([]);
   const showPanel = routeData.length > 0;
+  const [drawnRoute, setDrawnRoute] = useState<routeInfo[]>([]);
     
   //create form and track input data upon submission
   const {
@@ -59,11 +61,6 @@ export default function MainPG(){
       if (data.origin == data.destination || data.origin == "" || data.destination == "") {
         setAddressError("Invalid address")
         return
-      }
-
-      if (data.origin == data.destination || data.origin == "" || data.destination == ""){
-          setAddressError("Invalid address")
-          return
       }
 
       //store searched values to display in sidebar
@@ -93,7 +90,9 @@ export default function MainPG(){
               setAddressError(result.error)
           } 
           else {
+              //console.log(result[0].legs[0].draw) //markers for origin and dest
               setRoute(result)
+              setDrawnRoute(result)
           }
       } 
       catch (e: unknown) {
@@ -139,6 +138,7 @@ export default function MainPG(){
           }
 
           setPreferences(previousPreferences);
+
         }
       }
     }
@@ -146,58 +146,29 @@ export default function MainPG(){
   }, []); //run only on first render to prevent repetitive username retrieval
 
   //get user curr location
-  const geoControlRef= useRef<maplibregl.GeolocateControl>(null)  ;
-
-  const geojsonData : FeatureCollection<LineString> = {
-  type: 'FeatureCollection',
-  features: [
-    {
-      type:"Feature",
+  const geoControlRef = useRef<maplibregl.GeolocateControl>(null);
+  const geojsonData: FeatureCollection<LineString> = {
+    type: 'FeatureCollection',
+    features: drawnRoute.flatMap(route =>
+      route.legs.map(leg => ({
+        type: 'Feature' as const,
         properties: {},
-  geometry: {
-    type: 'LineString',
-    // below are test coords, we need to feed data into here
-    coordinates: [
-  [-73.97559, 40.59103],
-  [-73.97575, 40.59113],
-  [-73.97577, 40.59114],
-  [-73.97584, 40.59118],
-  [-73.97589, 40.59122],
-  [-73.97591, 40.59123],
-  [-73.97645, 40.59155],
-  [-73.97646, 40.59156],
-  [-73.97659, 40.59163],
-  [-73.97676, 40.59173],
-  [-73.97676, 40.59174],
-  [-73.97697, 40.59187],
-  [-73.97698, 40.59187],
-  [-73.97709, 40.59194],
-  [-73.97718, 40.592],
-  [-73.97722, 40.59202],
-  [-73.97766, 40.59229],
-  [-73.97768, 40.59231],
-  [-73.97776, 40.59235],
-  [-73.97784, 40.5924],
-  [-73.97787, 40.59242],
-  [-73.97795, 40.59247],
-  [-73.97814, 40.59258],
-  [-73.97828, 40.59267],
-  [-73.97823, 40.59272]
-        ]
-      }
+        geometry: {
+          type: 'LineString' as const,
+          coordinates: polyline.decode(leg.draw).map(([lat, lng]: [number, number]) => [lng, lat])
+        }
+      }))
+    )
+  };
+
+  const lineLayer = {
+    id: 'line-layer',
+    type: 'line',
+    paint: {
+      'line-color': 'blue',
+      'line-width': 5
     }
-  ]
-
-} as const;
-
-const lineLayer = {
-  id: 'line-layer',
-  type: 'line',
-  paint: {
-    'line-color': '#007cbf',
-    'line-width': 8
-  }
-} as const;
+  } as const;
 
   useEffect(()=>{
     geoControlRef.current?.trigger()
@@ -220,31 +191,30 @@ const lineLayer = {
               }}
               style={{width: '100vw', height: '100vh'}}
               mapStyle="/high-contrast-map.json"
-            >
+          >
 
-              <Source id="my-data" type="geojson" data={geojsonData}>
-                  <Layer {...lineLayer} />
-              </Source>
+          <Source id="my-data" type="geojson" data={geojsonData}>
+            <Layer {...lineLayer} />
+          </Source>
 
             </Map>
         : 
           // false
           <Map
-                initialViewState={{
-                  longitude: -74.0060,
-                  latitude: 40.7128,
-                  zoom: 12,
+              initialViewState={{
+              longitude: -74.0060,
+              latitude: 40.7128,
+              zoom: 12,
+              }}
+              style={{width: '100vw', height: '100vh'}}
+              mapStyle="/default-map.json"
+          >
 
-                }}
-                style={{width: '100vw', height: '100vh'}}
-                mapStyle="/default-map.json"
-              >
+          <Source id="my-data" type="geojson" data={geojsonData}>
+            <Layer {...lineLayer} />
+          </Source>
 
-                <Source id="my-data" type="geojson" data={geojsonData}>
-                  <Layer {...lineLayer} />
-                </Source>
-
-              </Map>
+          </Map>
         } 
         
         {/* add the lines layer to draw route  */}
