@@ -58,7 +58,7 @@ export async function validateAddress(address: string){
   const isNYC = nycBoroughs.has(borough) || nycCounties.has(county)
 
   if (!isNYC){
-    throw new Error("Address is not within New York City")
+    throw new Error()
   }
 
   //convert string to decimal

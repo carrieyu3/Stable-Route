@@ -17,8 +17,26 @@ router.post('/create', async (req,res) => {
         }
         
         const {user_id} = req.body
-        const originCoordinates = await validateAddress(req.body.origin)
-        const destinationCoordinates = await validateAddress(req.body.destination)
+
+        const [originResult, destinationResult] = await Promise.allSettled([
+            validateAddress(req.body.origin),
+            validateAddress(req.body.destination)
+        ])
+
+        //check if either address is not valid
+        if (originResult.status === 'rejected' || destinationResult.status === 'rejected') {
+            const errors = []
+            if (originResult.status === 'rejected') {
+                errors.push("Origin address is invalid or not within New York City")
+            }
+            if (destinationResult.status === 'rejected') {
+                errors.push("Destination address is invalid or not within New York City")
+            }
+            throw new Error(errors.join(' | '))
+        }
+
+        const originCoordinates = originResult.value
+        const destinationCoordinates = destinationResult.value
 
         const route_req = {
             ...req.body,

@@ -23,10 +23,17 @@ type destinationInput = {
   destination: string;
 }
 
+function ValidBadge() {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: '#e8f5e9', color: '#2e7d32', fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 10, marginLeft: 8 }}>
+      NYC
+    </span>
+  )
+}
+
 export default function MainPG(){
 
   const [showBox] = useState(false);
-
   const [addressError, setAddressError] = useState("");
   const [,setUsername] = useState("");
   const [userId, setUserId] = useState("");
@@ -45,6 +52,8 @@ export default function MainPG(){
   const [routeData, setRoute] = useState<routeInfo[]>([]);
   const showPanel = routeData.length > 0;
   const [drawnRoute, setDrawnRoute] = useState<routeInfo[]>([]);
+  const [originError, setOriginError] = useState(false)
+  const [destinationError, setDestinationError] = useState(false)
     
   //create form and track input data upon submission
   const {
@@ -89,9 +98,11 @@ export default function MainPG(){
 
           if (result.error){
               setAddressError(result.error)
+              setOriginError(result.error.includes("Origin"))
+              setDestinationError(result.error.includes("Destination"))
           } 
           else {
-              //console.log(result[0].legs[0].draw) //markers for origin and dest
+              //console.log(result[0].legs[0].draw) //***going to add markers for origin and dest
               setRoute(result)
               setDrawnRoute(result)
           }
@@ -162,6 +173,7 @@ export default function MainPG(){
     )
   };
 
+  //polyline for route
   const lineLayer = {
     id: 'line-layer',
     type: 'line',
@@ -233,29 +245,26 @@ export default function MainPG(){
 
               {/* starting point input */}
               <input
-                id = "origin"
-                placeholder = "start point"
+                id="origin"
+                placeholder="start point"
                 className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6"
-
                 {...register("origin", { required: true })}
-
-                onChange={() => {setAddressError("") ; clearErrors("origin"); }}
-                
+                onChange={() => { setAddressError(""); setOriginError(false); clearErrors("origin"); }}
               />
+              {originError && <span style={{ display: 'inline-flex', alignItems: 'center', background: '#fdecea', color: '#c62828', fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: '0 0 6px 6px', marginBottom: 4}}>Origin is invalid or not in NYC !</span>}
 
               {/* ending point input */}
               <input
-                id = "destination"
-                placeholder = "&#xF3E7; end point"
+                id="destination"
+                placeholder="&#xF3E7; end point"
                 className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6"
-
                 {...register("destination", { required: true })}
-
-                onChange={() => {setAddressError("") ; clearErrors("destination"); }}
+                onChange={() => { setAddressError(""); setDestinationError(false); clearErrors("destination"); }}
               />
+              {destinationError && <span style={{ display: 'inline-flex', alignItems: 'center', background: '#fdecea', color: '#c62828', fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: '0 0 6px 6px', marginBottom: 4}}>Destination is invalid or not in NYC !</span>}
 
             <button type="submit" className="mt-2 w-full bg-blue-500 text-white py-1.5 rounded-md text-sm font-medium hover:bg-blue-600 transition-colors">Search</button>
-            {addressError && <p className="text-red-500 text-sm">{addressError}</p>}
+            {addressError && !originError && !destinationError && <p className="text-red-500 text-sm">{addressError}</p>}
 
             </div>
 
@@ -302,6 +311,7 @@ export default function MainPG(){
                 <p style={{ fontSize: 11, color: '#888', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Starting Location</p>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <p style={{ fontSize: 15, fontWeight: 600, color: '#111', margin: 0 }}>{searchedOrigin}</p>
+                  {searchedOrigin && <ValidBadge />}
                 </div>
               </div>
 
@@ -310,6 +320,7 @@ export default function MainPG(){
                 <p style={{ fontSize: 11, color: '#888', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Destination</p>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <p style={{ fontSize: 15, fontWeight: 600, color: '#111', margin: 0 }}>{searchedDestination}</p>
+                  {searchedDestination && <ValidBadge />}
                 </div>
               </div>
 
