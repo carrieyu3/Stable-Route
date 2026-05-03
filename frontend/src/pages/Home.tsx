@@ -69,7 +69,7 @@ export default function MainPG(){
 
       try {
           //send route request to backend
-          const rawResponse = await fetch('http://localhost:3000/routes/create', {
+          const rawResponse = await fetch(`${import.meta.env.VITE_API_URL}/routes/create`, {
               method: 'POST',
               headers: {
                   'Accept': 'application/json',

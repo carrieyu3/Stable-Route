@@ -85,7 +85,7 @@ const TrainRoute = ({leg, origin, destination, startSeconds, endSeconds} : {leg 
   const toPlace = (leg.toPlace == "Destination") ? destination : leg.toPlace
   useEffect(() => {
     const getTrainTime = async() => {
-      const response = await fetch('http://localhost:3000/routes/train-arrival', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/routes/train-arrival`, {
         method: 'POST',
         headers : {
           'Content-Type': 'application/json'
@@ -138,7 +138,7 @@ const BusRoute = ({leg, origin, destination, startSeconds, endSeconds} : {leg : 
   const toPlace = (leg.toPlace == "Destination") ? destination : leg.toPlace
   useEffect(() => {
     const getTrainTime = async() => {
-      const response = await fetch('http://localhost:3000/routes/bus-arrival', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/routes/bus-arrival`, {
         method: 'POST',
         headers : {
           'Content-Type': 'application/json'
