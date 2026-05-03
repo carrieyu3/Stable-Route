@@ -4,6 +4,11 @@ import routes from './routes/routes-handlers.ts'
 import cors from 'cors'
 import csv from 'csv-parser';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express()
 const port = 3000
@@ -11,7 +16,7 @@ const port = 3000
 export const subway_hashmap : { [key: string] : any } = {}
 
 function csvToHashmap() {
-  fs.createReadStream('data/MTA_Subway_Stations_20260414.csv')
+  fs.createReadStream(path.join(__dirname, 'data', 'MTA_Subway_Stations_20260414.csv'))
     .pipe(csv())
     .on('data', (data) => {
       subway_hashmap[data['GTFS Stop ID']] = data
