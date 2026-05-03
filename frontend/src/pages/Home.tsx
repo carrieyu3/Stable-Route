@@ -6,9 +6,8 @@ import './Home.css'
 //library import needed for map
 import {Map, Source, Layer } from 'react-map-gl/maplibre';
 
-
 //icons 
-// import { GearFill , GeoAltFill } from 'react-bootstrap-icons';
+//import { GearFill , GeoAltFill } from 'react-bootstrap-icons';
 import { useEffect, useRef , useState } from "react";
 
 //supabase
@@ -39,17 +38,18 @@ export default function MainPG(){
       bus: false, 
       train: false 
     });
+
   const [showPanel, setShowPanel] = useState(false);
   const [searchedOrigin, setSearchedOrigin] = useState("");
   const [searchedDestination, setSearchedDestination] = useState("");
   const [routeData, setRoute] = useState<routeInfo[]>([]);
     
-    //create form and track input data upon submission
-    const {
-      register,
-      handleSubmit,
-      clearErrors,
-    } = useForm<destinationInput>({mode: "onSubmit",});
+  //create form and track input data upon submission
+  const {
+    register,
+    handleSubmit,
+    clearErrors,
+  } = useForm<destinationInput>({mode: "onSubmit",});
 
   //submission for address 
   const onSubmit: SubmitHandler<destinationInput> = async (data) => {
@@ -62,10 +62,9 @@ export default function MainPG(){
           return
       }
 
-      // store searched values to display in sidebar
+      //store searched values to display in sidebar
       setSearchedOrigin(data.origin)
       setSearchedDestination(data.destination)
-
 
       try {
           //send route request to backend
@@ -92,7 +91,6 @@ export default function MainPG(){
           else {
               console.log(result)
               setRoute(result)
-
           }
       } 
       catch (e: unknown) {
@@ -205,7 +203,7 @@ const lineLayer = {
     return(
       <>
 
-        <div className="flex min-h-full flex-col justify-center absolute">
+        <div className="flex min-h-full flex-col justify-center absolute overflow-hidden w-screen h-screen">
 
         { /* map displays depending if user wants high contrast or not */}
         {preferences.highContrast ? 
@@ -306,8 +304,11 @@ const lineLayer = {
                 background: '#ffffff',
                 zIndex: 10,
                 padding: '24px 20px',
-            }} >
-                
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+            }}>
+                            
               {/* Exit white sidebar */}
               <button onClick={() => setShowPanel(false)}
                 style={{
@@ -344,9 +345,14 @@ const lineLayer = {
                 <div style={{ flex: 1, height: '1px', background: '#eee' }} />
               </div>
 
-                <div style={{overflowY: "scroll" , maxHeight: "100vh" , scrollbarWidth:"none"}} > 
+            <div style={{overflowY: "auto", flex: 1, minHeight: 0}}>
                   <DisplayRoute routeData={routeData} origin={searchedOrigin} destination={searchedDestination}></DisplayRoute>
-                </div>
+            </div>
+
+            <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', marginTop: 8 }}>
+              scroll down for more
+            </p>
+            
             </div>
           )}
 
