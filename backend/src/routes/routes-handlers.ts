@@ -97,7 +97,6 @@ router.post('/train-info', async(req,res) => {
     res.send(merged_json)
 })
 
-
 /*
 id = GTFS ID
 */
@@ -124,5 +123,26 @@ router.get('/test', async(req,res) =>{
     res.send({})
 })
 
+router.post('/train-arrival', async (req, res) => {
+    const { publicCode, stopId } = req.body
+    const stop_id = stopId.split(":")
+    const train_stop: transit = {
+        publicCode,
+        stopId: stop_id[1]
+    }
+    const arrivals = await trainArrival(train_stop)
+    res.json(arrivals.arrival)
+})
+
+router.post('/bus-arrival', async (req, res) => {
+    const { publicCode, stopId } = req.body
+    const bus_stop: transit = {
+        publicCode,
+        stopId,
+        directionId: 0
+    }
+    const arrivals = await busArrival(bus_stop)
+    res.json(arrivals.arrival)
+})
 
 export default router
