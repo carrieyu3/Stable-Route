@@ -4,6 +4,7 @@ import { type route , type transit, type busAlert, type busPlannedWork, type sub
 import dotenv from 'dotenv'
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { getUserPreferences } from '../users/users-queries.ts';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const env_path = join(__dirname,'../../.env')
@@ -68,7 +69,7 @@ export async function validateAddress(address: string){
   return { latitude, longitude }
 }
 
-export async function getRoute(route_req : route){
+export async function getRoute(route_req : route, pref_set : any){
   const response = await fetch(graphql_url, {
     method: "POST",
     headers: {
@@ -82,10 +83,15 @@ export async function getRoute(route_req : route){
         dateTime: new Date(),
         modes: 
           { accessMode: "foot",
-            transportModes: route_req.transportModes,
+            transportModes: ((pref_set.has('train') && pref_set.has('bus')) || (!pref_set.has('train') && !pref_set.has('bus'))) ? [ {transportMode: 'bus'}, {transportMode:"metro"} ] :
+            (pref_set.has('train') ? [{transportMode:"metro"}]: [{transportMode: 'bus'}]) ,
             egressMode: "foot"
           },
-        numTripPatterns: route_req.numTripPatterns
+        numTripPatterns: route_req.numTripPatterns,
+        wheelchairAccessible: pref_set.has('elevator') ? true : false,
+        maxAccessEgressDurationForMode : [
+          {streetMode : 'foot', duration : '8m'}
+        ]
       }
     })
   })

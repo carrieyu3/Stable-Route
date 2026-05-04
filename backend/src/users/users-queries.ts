@@ -20,16 +20,16 @@ export async function getUserPreferences(user_id:string){
     }else{
         console.log(data)
     }
-    const pref_for_route = new Set(['fewTransfers', 'elevator','escalator','bus','train'])
-    const pref_arr = []
+    const pref_for_route = new Set(['fewTransfers', 'elevator','bus','train'])
+    const pref_set = new Set()
     for (const pref of data){
         console.log(pref.preference_id)
         const {data,error} = await supabase.from('Preference').select('preference_name').eq('preference_id',pref.preference_id)
         if (data && data[0] && pref_for_route.has(data[0].preference_name)){
-            pref_arr.push(data[0].preference_name)
+            pref_set.add(data[0].preference_name)
         }
         
     }
-    return pref_arr
+    return pref_set
     
 }

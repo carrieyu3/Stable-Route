@@ -25,11 +25,12 @@ router.post('/create', async (req,res) => {
             origin: originCoordinates,
             destination: destinationCoordinates
         } as route
-
+        console.log(route_req)
         await validUserID(user_id)
 
+        const preference_set = await getUserPreferences(req.body.user_id)
         //untrimmed
-        const route = await getRoute(route_req)
+        const route = await getRoute(route_req,preference_set)
         await uploadRoute(user_id,route_req,route[0]["duration"])
 
         //trimmed
@@ -119,7 +120,13 @@ router.get('/test', async(req,res) =>{
         throw new Error("Field is missing")
     }
     const preference_array = await getUserPreferences(req.body.user_id)
+    const pref = {
+        wheelchair : preference_array.has('elevator') ? true : false,
+        mode : ((preference_array.has('train') && preference_array.has('bus')) || (!preference_array.has('train') && !preference_array.has('bus'))) ? [ {transportMode: 'bus'}, {transportMode:"metro"} ] :
+            (preference_array.has('train') ? [{transportMode:"metro"}]: [{transportMode: 'bus'}]) 
+    }
     console.log(preference_array)
+    console.log(pref)
 
     res.send({})
 })
