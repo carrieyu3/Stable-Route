@@ -10,7 +10,7 @@ Once you have to these Files, you must run the jar file which would download a g
 Before runnning, you need to be in the same directory as the jar file
 
 - java -Xmx4G -jar otp-shaded-2.8.1.jar --build --save .
-
+w
 ## Loading the graph
 
 - java -Xmx2G -jar otp-shaded-2.8.1.jar --load .

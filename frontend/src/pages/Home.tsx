@@ -16,6 +16,7 @@ import { supabase } from "../lib/supabase";
 
 import {Box, DisplayRoute, type routeInfo} from "../components/directions.tsx"
 import type {FeatureCollection, LineString } from 'geojson'
+import type { LineLayerSpecification } from 'maplibre-gl';
 
 // input for starting destination 
 type destinationInput = {
@@ -201,8 +202,7 @@ export default function MainPG(){
       : []
   };
 
-
-const lineLayer = {
+const lineLayer: Omit<LineLayerSpecification, 'source'> = {
   id: 'line-layer',
   type: 'line',
   paint: {
@@ -226,7 +226,7 @@ const lineLayer = {
       ['literal', [1, 0]]
     ]
   }
-} as const;
+};
 
   useEffect(()=>{
     geoControlRef.current?.trigger()
