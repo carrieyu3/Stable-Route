@@ -96,11 +96,15 @@ const TrainRoute = ({leg, origin, destination, startSeconds, endSeconds} : {leg 
         })
       })
       const response_json = await response.json()
+
       let string = ''
       for (const min of response_json){
-        string += min.toString() + ', '
+        if (min !== null) {
+          string += min.toString() + ', '
+        }
       }
       setTrainArrival(string)
+
       console.log(response_json)
     }
     if (leg.fromPlaceInfo.publicCode && leg.fromPlaceInfo.fromPlaceStopID) {
@@ -149,11 +153,15 @@ const BusRoute = ({leg, origin, destination, startSeconds, endSeconds} : {leg : 
         })
       })
       const response_json = await response.json()
+
       let string = ''
       for (const min of response_json){
-        string += min.toString() + ', '
+        if (min !== null) {
+          string += min.toString() + ', '
+        }
       }
       setBusArrival(string)
+
       console.log(response_json)
     }
     if (leg.fromPlaceInfo.publicCode && leg.fromPlaceInfo.fromPlaceStopID) {
