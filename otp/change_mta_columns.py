@@ -2,6 +2,7 @@ import zipfile
 import os
 from dotenv import load_dotenv
 from sodapy import Socrata
+import csv
 
 load_dotenv()
 API_KEY = os.getenv("DATA_NY_KEY")
@@ -68,6 +69,35 @@ def addColumn(lines, outfile, column_name, mode):
         
     return
 
+def load_ada_data(csv_file):
+    stops = {}
+    with open(csv_file, newline='', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            key = row.get("gtfs_stop_id")
+            if key:
+                stops[key] = row
+    return stops
+def csv_stopsADA(lines,outfile):
+    stops = load_ada_data("ada_stops.csv")  # <-- your saved CSV
+
+    for line in lines[1:]:
+        stop_id = line.split(",")[0]
+        key = stop_id.rstrip("NS")
+        row = stops.get(key)
+
+        if not row:
+            outfile.write(line.rstrip('\n') + ",\n")
+            continue
+
+        if stop_id.endswith("N"):
+            val = row.get("ada_northbound", "")
+        elif stop_id.endswith("S"):
+            val = row.get("ada_southbound", "")
+        else:
+            val = row.get("ada", "")
+
+        outfile.write(line.rstrip('\n') + f",{val}\n")
 def subway():
     # extracts the needed files from the zip
     zObject = zipfile.ZipFile('gtfs_subway.zip', 'r')
@@ -79,7 +109,8 @@ def subway():
     lines = infile.readlines()
     outfile = open(output_file, "w")
     addColumn(lines, outfile, ",wheelchair_boarding\n","subway")
-    stopsADA(lines, outfile)
+    # stopsADA(lines, outfile)
+    csv_stopsADA(lines, outfile)
     infile.close()
     outfile.close()
     
