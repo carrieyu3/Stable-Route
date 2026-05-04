@@ -17,8 +17,26 @@ router.post('/create', async (req,res) => {
         }
         
         const {user_id} = req.body
-        const originCoordinates = await validateAddress(req.body.origin)
-        const destinationCoordinates = await validateAddress(req.body.destination)
+
+        const [originResult, destinationResult] = await Promise.allSettled([
+            validateAddress(req.body.origin),
+            validateAddress(req.body.destination)
+        ])
+
+        //check if either address is not valid
+        if (originResult.status === 'rejected' || destinationResult.status === 'rejected') {
+            const errors = []
+            if (originResult.status === 'rejected') {
+                errors.push("Origin address is invalid or not within New York City")
+            }
+            if (destinationResult.status === 'rejected') {
+                errors.push("Destination address is invalid or not within New York City")
+            }
+            throw new Error(errors.join(' | '))
+        }
+
+        const originCoordinates = originResult.value
+        const destinationCoordinates = destinationResult.value
 
         const route_req = {
             ...req.body,
@@ -98,7 +116,6 @@ router.post('/train-info', async(req,res) => {
     res.send(merged_json)
 })
 
-
 /*
 id = GTFS ID
 */
@@ -131,5 +148,26 @@ router.get('/test', async(req,res) =>{
     res.send({})
 })
 
+router.post('/train-arrival', async (req, res) => {
+    const { publicCode, stopId } = req.body
+    const stop_id = stopId.split(":")
+    const train_stop: transit = {
+        publicCode,
+        stopId: stop_id[1]
+    }
+    const arrivals = await trainArrival(train_stop)
+    res.json(arrivals.arrival)
+})
+
+router.post('/bus-arrival', async (req, res) => {
+    const { publicCode, stopId } = req.body
+    const bus_stop: transit = {
+        publicCode,
+        stopId,
+        directionId: 0
+    }
+    const arrivals = await busArrival(bus_stop)
+    res.json(arrivals.arrival)
+})
 
 export default router
