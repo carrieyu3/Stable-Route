@@ -70,7 +70,7 @@ export default function MainPG(){
 
       try {
           //send route request to backend
-          const rawResponse = await fetch(`${import.meta.env.VITE_API_URL}/routes/create`, {
+          const rawResponse = await fetch('http://localhost:3000/routes/create', {
               method: 'POST',
               headers: {
                   'Accept': 'application/json',
@@ -80,13 +80,12 @@ export default function MainPG(){
                   user_id: userId,
                   origin: data.origin,
                   destination: data.destination,
-                  transportModes: [{ transportMode: "metro" }], //placeholder
+                  transportModes: [{ transportMode: "bus" }], //placeholder
                   numTripPatterns: 1 //display # trip patterns
               })
           })
 
           const result = await rawResponse.json()
-
           if (result.error){
               setAddressError(result.error)
           } 
@@ -153,7 +152,9 @@ export default function MainPG(){
     features: drawnRoute.flatMap(route =>
       route.legs.map(leg => ({
         type: 'Feature' as const,
-        properties: {},
+        properties: {
+          mode: leg.mode
+        },
         geometry: {
           type: 'LineString' as const,
           coordinates: polyline.decode(leg.draw).map(([lat, lng]: [number, number]) => [lng, lat])
@@ -162,14 +163,31 @@ export default function MainPG(){
     )
   };
 
-  const lineLayer = {
-    id: 'line-layer',
-    type: 'line',
-    paint: {
-      'line-color': 'blue',
-      'line-width': 5
-    }
-  } as const;
+const lineLayer = {
+  id: 'line-layer',
+  type: 'line',
+  paint: {
+    'line-color': [
+      'match',
+      ['get', 'mode'],
+      'foot', '#1c7ed6',
+      'bus', '#1c7ed6',
+      'metro', '#1c7ed6',
+      /* default */ '#1c7ed6'
+    ],
+    'line-width': 7,
+
+    // dotted / dashed styles
+    'line-dasharray': [
+      'match',
+      ['get', 'mode'],
+      'foot', ['literal', [0.5, 1]],   // dotted
+      'bus', ['literal', [2, 1.5]],        // dashed
+      'metro', ['literal', [1, 0]],       // solid
+      ['literal', [1, 0]]
+    ]
+  }
+} as const;
 
   useEffect(()=>{
     geoControlRef.current?.trigger()
