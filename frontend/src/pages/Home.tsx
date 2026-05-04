@@ -173,6 +173,33 @@ export default function MainPG(){
     )
   };
 
+  //locate origin and dest marker points
+  const endpointData: FeatureCollection = {
+    type: "FeatureCollection",
+    features: geojsonData.features.length
+      ? [
+          {
+            type: "Feature",
+            properties: { type: "origin" },
+            geometry: {
+              type: "Point",
+              coordinates:
+                geojsonData.features[0].geometry.coordinates[0] //first coord
+            }
+          },
+          {
+            type: "Feature",
+            properties: { type: "destination" },
+            geometry: {
+              type: "Point",
+              coordinates:
+                geojsonData.features[geojsonData.features.length - 1].geometry.coordinates.slice(-1)[0] //last coord
+            }
+          }
+        ]
+      : []
+  };
+
   //polyline for route
   const lineLayer = {
     id: 'line-layer',
@@ -194,13 +221,13 @@ export default function MainPG(){
 
         { /* map displays depending if user wants high contrast or not */}
         {preferences.highContrast ? 
-        // true 
+        
+          //true for high contrast
           <Map
               initialViewState={{
                 longitude: -74.0060,
                 latitude: 40.7128,
                 zoom: 12
-
               }}
               style={{width: '100vw', height: '100vh'}}
               mapStyle="/high-contrast-map.json"
@@ -210,9 +237,31 @@ export default function MainPG(){
             <Layer {...lineLayer} />
           </Source>
 
+          {/* display colors of endpoints */}
+          <Source id="endpoints" type="geojson" data={endpointData}>
+            <Layer
+              id="endpoint-layer"
+              type="circle"
+              paint={{
+                "circle-radius": 8,
+                "circle-color": [
+                  "match",
+                  ["get", "type"],
+                  "origin",
+                  "#228B22", //green starting point
+                  "destination",
+                  "#d50000", //red starting point
+                  "#000"
+                ],
+                "circle-stroke-width": 2.5, //border weight
+                "circle-stroke-color": "#000"
+              }}
+            />
+          </Source>
+
             </Map>
         : 
-          // false
+          //false for high contrast
           <Map
               initialViewState={{
               longitude: -74.0060,
@@ -225,6 +274,27 @@ export default function MainPG(){
 
           <Source id="my-data" type="geojson" data={geojsonData}>
             <Layer {...lineLayer} />
+          </Source>
+
+          <Source id="endpoints" type="geojson" data={endpointData}>
+            <Layer
+              id="endpoint-layer"
+              type="circle"
+              paint={{
+                "circle-radius": 8,
+                "circle-color": [
+                  "match",
+                  ["get", "type"],
+                  "origin",
+                  "#228B22",
+                  "destination",
+                  "#d50000",
+                  "#000"
+                ],
+                "circle-stroke-width": 2.5,
+                "circle-stroke-color": "#000"
+              }}
+            />
           </Source>
 
           </Map>
