@@ -154,7 +154,7 @@ export async function busArrival(bus_stop : transit){
 
   feed.entity.forEach((entity) => {
     if (entity.tripUpdate?.trip.routeId == bus_stop.publicCode 
-      && entity.tripUpdate.trip.directionId == bus_stop.directionId && entity.tripUpdate.stopTimeUpdate) {
+          && entity.tripUpdate?.stopTimeUpdate) {
         
         entity.tripUpdate.stopTimeUpdate.forEach(stop => {
         if (stop.stopId == bus_stop.stopId && stop.arrival?.time){
@@ -329,8 +329,6 @@ export async function getElevatorOutage(map_of_elevators : Map<string,string>){
   const oos_elevator_json = JSON.stringify(arr_of_oos_elevator)
 
   return oos_elevator_json
-  
-  
 }
 
 export async function getElevatorID(gtfs_stop_id : string){

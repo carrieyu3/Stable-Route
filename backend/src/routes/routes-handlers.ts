@@ -161,12 +161,16 @@ router.post('/train-arrival', async (req, res) => {
 
 router.post('/bus-arrival', async (req, res) => {
     const { publicCode, stopId } = req.body
+    const stop_id = stopId.split(":")
+    console.log("stripped stopId:", stop_id[1])
+    console.log("publicCode:", publicCode)
     const bus_stop: transit = {
         publicCode,
-        stopId,
+        stopId: stop_id[1],
         directionId: 0
     }
     const arrivals = await busArrival(bus_stop)
+    console.log("arrivals:", arrivals)
     res.json(arrivals.arrival)
 })
 
