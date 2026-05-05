@@ -76,12 +76,14 @@ const WalkRoute = ({leg, origin, destination, startSeconds, endSeconds} : {leg :
   )
 }
 
-const TrainRoute = ({leg, origin, destination, startSeconds, endSeconds} : {leg : routeLeg, origin : string, destination : string,startSeconds:number, endSeconds:number}) => {
+const TrainRoute = ({leg, origin, destination, startSeconds, endSeconds, elevatorPreference} : {leg : routeLeg, origin : string, destination : string,startSeconds:number, endSeconds:number, elevatorPreference: boolean}) => {
   const [trainArrival, setTrainArrival] = useState('')
   const startTime = getTime(startSeconds)
   const endTime = getTime(endSeconds)
   const fromPlace = (leg.fromPlaceName == "Origin") ? origin : leg.fromPlaceName
   const toPlace = (leg.toPlace == "Destination") ? destination : leg.toPlace
+  const [elevatorStatus, setElevatorStatus] = useState<{which: string}[]>([])
+
   useEffect(() => {
     const getTrainTime = async() => {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/routes/train-arrival`, {
@@ -113,6 +115,20 @@ const TrainRoute = ({leg, origin, destination, startSeconds, endSeconds} : {leg 
     }, 60000);
     return () => clearInterval(intervalId);
   }, [leg.fromPlaceInfo.publicCode, leg.fromPlaceInfo.fromPlaceStopID])
+
+    useEffect(() => {
+    const getElevatorStatus = async () => {
+      const stopId = leg.fromPlaceInfo.fromPlaceStopID?.split(':')?.[1]
+      if (!stopId) {
+        return
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/routes/ee-outage/${stopId}`)
+      const data = await response.json()
+      setElevatorStatus(data)
+    }
+    getElevatorStatus()
+  }, [leg.fromPlaceInfo.fromPlaceStopID])
   
   return (
     <>
@@ -122,6 +138,17 @@ const TrainRoute = ({leg, origin, destination, startSeconds, endSeconds} : {leg 
         <p>{startTime} to {endTime}</p>
         <p>{SecondsToMinutes(leg.duration)} minutes</p>
         <p>Next train arrives in: {trainArrival} minutes</p>
+          
+        {elevatorPreference && (
+        <div style={{ marginTop: 8, padding: '6px 8px' }}>
+          <p style={{ fontWeight: 600, fontSize: 12, margin: '0 0 4px', color: elevatorStatus.length > 0 ? '#e60000' : '#2e7d32' }}>
+            {elevatorStatus.length > 0 ? 'Elevator Status: OUTAGE' : 'Elevator Status: GOOD'}
+          </p>
+          {elevatorStatus.map((e, i) => (
+            <p key={i} style={{ fontSize: 12, margin: 0 }}>{e.which}</p>
+          ))}
+        </div>
+        )}
       </div>
     </>
   )
@@ -177,8 +204,8 @@ const BusRoute = ({leg, origin, destination, startSeconds, endSeconds} : {leg : 
   )
 }
 
-export const DisplayRoute = (props: {routeData : routeInfo[], origin : string, destination : string}) => {
-  const {routeData , origin, destination} = props
+export const DisplayRoute = (props: {routeData : routeInfo[], origin : string, destination : string, elevatorPreference: boolean}) => {
+  const {routeData , origin, destination, elevatorPreference} = props
 
   return (
     <div>
@@ -196,7 +223,7 @@ export const DisplayRoute = (props: {routeData : routeInfo[], origin : string, d
               return(
               <div key={idx}>
                 {leg.mode == 'foot' ? <WalkRoute leg={leg} origin={origin} destination={destination} startSeconds={startSeconds} endSeconds={endSeconds}></WalkRoute> : null}
-                {leg.mode == 'metro' ? <TrainRoute leg={leg} origin={origin} destination={destination} startSeconds={startSeconds} endSeconds={endSeconds}></TrainRoute> : null}
+                {leg.mode == 'metro' ? <TrainRoute leg={leg} origin={origin} destination={destination} startSeconds={startSeconds} endSeconds={endSeconds} elevatorPreference={elevatorPreference}></TrainRoute> : null}
                 {leg.mode == 'bus' ? <BusRoute leg={leg} origin={origin} destination={destination} startSeconds={startSeconds} endSeconds={endSeconds}></BusRoute> : null}
               </div>
               )

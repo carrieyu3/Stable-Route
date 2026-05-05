@@ -531,7 +531,7 @@ const lineLayer: Omit<LineLayerSpecification, 'source'> = {
                   )}
 
                   <div style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
-                    <DisplayRoute routeData={routeData} origin={searchedOrigin} destination={searchedDestination}/>
+                    <DisplayRoute routeData={routeData} origin={searchedOrigin} destination={searchedDestination} elevatorPreference={preferences.elevator}/>
                   </div>
 
                   <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', marginTop: 8 }}>
