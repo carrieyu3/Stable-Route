@@ -47,6 +47,23 @@ router.post('/create', async (req,res) => {
         await validUserID(user_id)
 
         const preference_set = await getUserPreferences(req.body.user_id)
+
+        //Prioritize selections in frontend over stored preferences in db
+        const requestedMode = req.body.transportModes?.[0]?.transportMode //selections
+
+                if (requestedMode) { //disregard stored preferences in db
+                    preference_set.delete('bus')
+                    preference_set.delete('train')
+
+                    //add back based on selection
+                    if (requestedMode === 'bus'){
+                        preference_set.add('bus')
+                    }
+                    if (requestedMode === 'train'){
+                        preference_set.add('train')
+                    }
+                }
+
         //untrimmed
         const route = await getRoute(route_req,preference_set)
         await uploadRoute(user_id,route_req,route[0]["duration"])
@@ -128,7 +145,6 @@ router.get('/ee-outage/:id', async(req,res) =>{
 
     res.send(oos_elevator_json)
 })
-
 
 router.get('/test', async(req,res) =>{
     if (Object.keys(req.body).length === 0){

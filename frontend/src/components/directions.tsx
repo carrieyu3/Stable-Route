@@ -45,7 +45,7 @@ const Direction = (dire : string) => {
 const StartDisplay = ({fromPlace}:{fromPlace : string}) => {
   return (
     <>
-      <p><b>Starting location</b>: {fromPlace}</p>
+      <p><b>Starting Location</b>: {fromPlace}</p>
       <br/>
     </>
   )
@@ -55,11 +55,10 @@ const EndDisplay = ({destination}:{destination : string}) => {
   return (
     <>
     <br/>
-      <p><b>Ending location</b>: {destination}</p>
+      <p><b>Destination</b>: {destination}</p>
     </>
   )
 }
-
 
 const WalkRoute = ({leg, origin, destination, startSeconds, endSeconds} : {leg : routeLeg, origin : string, destination : string, startSeconds:number, endSeconds:number}) => {
   const startTime = getTime(startSeconds)
@@ -115,8 +114,6 @@ const TrainRoute = ({leg, origin, destination, startSeconds, endSeconds} : {leg 
     return () => clearInterval(intervalId);
   }, [leg.fromPlaceInfo.publicCode, leg.fromPlaceInfo.fromPlaceStopID])
   
-
-
   return (
     <>
       <div style={{color: "#000", width: "90%" , borderLeft: "6px solid #000" , padding: "9px"}}>

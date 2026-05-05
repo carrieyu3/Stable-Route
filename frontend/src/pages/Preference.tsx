@@ -10,8 +10,8 @@ export default function Preference() {
   const [preferences, setPreferences] = 
     useState({ 
       highContrast: false,
-      fewTransfers: false,
-      escalator: false, 
+      //fewTransfers: false,
+      //escalator: false, 
       elevator: false, 
       bus: false, 
       train: false 
@@ -139,7 +139,7 @@ export default function Preference() {
               </label>
             </div>
 
-            { /* Few Transfers */ }
+            { /* Few Transfers 
             <div className="inline-flex items-start">
               <label htmlFor="fewTransfers" className="flex items-start cursor-pointer relative">
                 <input
@@ -162,8 +162,9 @@ export default function Preference() {
                 </div>
               </label>
             </div>
+            */ }
 
-            { /* Escalator */ }
+            { /* Escalator
             <div className="inline-flex items-start">
               <label htmlFor="escalator" className="flex items-start cursor-pointer relative">
                 <input
@@ -186,6 +187,7 @@ export default function Preference() {
                 </div>
               </label>
             </div>
+          */ }
 
             { /* Elevator */ }
             <div className="inline-flex items-start">

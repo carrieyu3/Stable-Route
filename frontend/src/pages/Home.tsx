@@ -51,10 +51,13 @@ export default function MainPG(){
   const [searchedOrigin, setSearchedOrigin] = useState("");
   const [searchedDestination, setSearchedDestination] = useState("");
   const [routeData, setRoute] = useState<routeInfo[]>([]);
-  const showPanel = routeData.length > 0;
+  const [showSidebar, setShowSidebar] = useState(false)
+  const showPanel = routeData.length > 0 || showSidebar
   const [drawnRoute, setDrawnRoute] = useState<routeInfo[]>([]);
   const [originError, setOriginError] = useState(false)
   const [destinationError, setDestinationError] = useState(false)
+  const [selectedMode, setSelectedMode] = useState<'bus' | 'train' | null>(null)
+  const TrainAndBusMode = preferences.bus && preferences.train
     
   //create form and track input data upon submission
   const {
@@ -64,53 +67,61 @@ export default function MainPG(){
     reset, //clear prev input fields
   } = useForm<destinationInput>({mode: "onSubmit",});
 
-  //submission for address 
-  const onSubmit: SubmitHandler<destinationInput> = async (data) => {
+  //fetch route based on selected mode
+  const fetchRoute = async (origin: string, destination: string, mode: 'bus' | 'train') => {
+      const rawResponse = await fetch('http://localhost:3000/routes/create', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          origin,
+          destination,
+          transportModes: [{ transportMode: mode }],
+          numTripPatterns: 1
+        })
+      })
 
+      const result = await rawResponse.json()
+      if (result.error) {
+        setAddressError(result.error)
+        setOriginError(result.error.includes("Origin"))
+        setDestinationError(result.error.includes("Destination"))
+      } 
+      else {
+        setRoute(result)
+        setDrawnRoute(result)
+      }
+  }
+
+  //submission for route
+  const onSubmit: SubmitHandler<destinationInput> = async (data) => {
       setRoute([]); //clear prev route
+      setDrawnRoute([]);
+      setSelectedMode(null);
+      setShowSidebar(false);
 
       if (data.origin == data.destination || data.origin == "" || data.destination == "") {
         setAddressError("Invalid address")
         return
       }
 
-      //store searched values to display in sidebar
       setSearchedOrigin(data.origin)
       setSearchedDestination(data.destination)
+      setShowSidebar(true)
 
-      try {
-          //send route request to backend
-          const rawResponse = await fetch('http://localhost:3000/routes/create', {
-              method: 'POST',
-              headers: {
-                  'Accept': 'application/json',
-                  'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                  user_id: userId,
-                  origin: data.origin,
-                  destination: data.destination,
-                  transportModes: [{ transportMode: "bus" }], //placeholder
-                  numTripPatterns: 1 //display # trip patterns
-              })
-          })
+      //both Train and Bus are selected - allow user to pick train or bus
+      if (TrainAndBusMode) 
+        return
 
-          const result = await rawResponse.json()
-          if (result.error){
-              setAddressError(result.error)
-              setOriginError(result.error.includes("Origin"))
-              setDestinationError(result.error.includes("Destination"))
-          } 
-          else {
-              //console.log(result[0].legs[0].draw) //***going to add markers for origin and dest
-              setRoute(result)
-              setDrawnRoute(result)
-          }
+      //if only Train or bus, just display route data
+      if (preferences.bus) {
+        await fetchRoute(data.origin, data.destination, 'bus')
       } 
-      catch (e: unknown) {
-        if (e instanceof Error){
-          setAddressError(e.message)
-        }
+      else {
+        await fetchRoute(data.origin, data.destination, 'train')
       }
   }
 
@@ -334,7 +345,7 @@ const lineLayer: Omit<LineLayerSpecification, 'source'> = {
               {/* starting point input */}
               <input
                 id="origin"
-                placeholder="start point"
+                placeholder="Enter your current location"
                 className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6"
                 {...register("origin", { required: true })}
                 onChange={() => { setAddressError(""); setOriginError(false); clearErrors("origin"); }}
@@ -344,7 +355,7 @@ const lineLayer: Omit<LineLayerSpecification, 'source'> = {
               {/* ending point input */}
               <input
                 id="destination"
-                placeholder="&#xF3E7; end point"
+                placeholder="Enter a destination"
                 className="block w-full rounded-md border-2 border-gray-400 bg-white px-3 py-1.5 text-base text-black placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6"
                 {...register("destination", { required: true })}
                 onChange={() => { setAddressError(""); setDestinationError(false); clearErrors("destination"); }}
@@ -381,7 +392,7 @@ const lineLayer: Omit<LineLayerSpecification, 'source'> = {
             }}>
                             
               {/* Exit white sidebar */}
-              <button onClick={() => { setRoute([]); setDrawnRoute([]); setSearchedOrigin(""); setSearchedDestination(""); reset(); }}
+              <button onClick={() => { setRoute([]); setDrawnRoute([]); setSearchedOrigin(""); setSearchedDestination(""); setSelectedMode(null); setShowSidebar(false); reset(); }}
                 style={{
                   position: 'absolute',
                   top: 16,
@@ -412,27 +423,64 @@ const lineLayer: Omit<LineLayerSpecification, 'source'> = {
                 </div>
               </div>
 
-              {/* Transition to Route */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 20, marginBottom: 16 }}>
-                <div style={{ flex: 1, height: '1px', background: '#eee' }} />
-                <span style={{ fontSize: 14, color: '#aaa' }}>Route</span>
-                <div style={{ flex: 1, height: '1px', background: '#eee' }} />
+              {/* If both Bus and Train were selected in Preference, user will select either one */}
+              {TrainAndBusMode && !selectedMode ? (
+                <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 20, marginBottom: 25}}>
+                    <div style={{ flex: 1, height: '1px', background: '#eee' }} />
+                  </div>
+
+                  <p style={{ fontSize: 13, color: '#555', textAlign: 'center' }}>Please select a mode of transportation below:</p>
+
+                  <button 
+                    onClick={() => { setSelectedMode('bus'); fetchRoute(searchedOrigin, searchedDestination, 'bus') }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#1c7ed6', e.currentTarget.style.color = '#fff')}
+                    onMouseLeave={e => (e.currentTarget.style.background = '#fff', e.currentTarget.style.color = '#1c7ed6')}
+                    style={{ padding: '14px', borderRadius: 10, border: '2px solid #1c7ed6', background: '#fff', fontSize: 15, fontWeight: 600, color: '#1c7ed6', cursor: 'pointer' }}>
+                    BUS
+                  </button>
+
+                  <button 
+                    onClick={() => { setSelectedMode('train'); fetchRoute(searchedOrigin, searchedDestination, 'train') }}
+                                        onMouseEnter={e => (e.currentTarget.style.background = '#1c7ed6', e.currentTarget.style.color = '#fff')}
+                    onMouseLeave={e => (e.currentTarget.style.background = '#fff', e.currentTarget.style.color = '#1c7ed6')}
+                    style={{ padding: '14px', borderRadius: 10, border: '2px solid #1c7ed6', background: '#fff', fontSize: 15, fontWeight: 600, color: '#1c7ed6', cursor: 'pointer' }}>
+                    TRAIN
+                  </button>
+
+                </div>
+              ) : (
+                <>
+
+                  {/* Transition to route display for selected transport mode */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 20}}>
+                    <div style={{ flex: 1, height: '1px', background: '#eee' }} />
+                    <span style={{ fontSize: 14, color: '#aaa' }}>Route</span>
+                    <div style={{ flex: 1, height: '1px', background: '#eee' }} />
+                  </div>
+
+                  {TrainAndBusMode && selectedMode && (
+                    <button 
+                      onClick={() => { setSelectedMode(null); setRoute([]); setDrawnRoute([]); }} 
+                      style={{ marginTop: 5, alignSelf: 'flex-end', fontSize: 12, color: 'red', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                      BACK
+                    </button>
+                  )}
+
+                  <div style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                    <DisplayRoute routeData={routeData} origin={searchedOrigin} destination={searchedDestination}/>
+                  </div>
+
+                  <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', marginTop: 8 }}>
+                    scroll down for more
+                  </p>
+                </>
+              )}
               </div>
-
-            <div style={{overflowY: "auto", flex: 1, minHeight: 0}}>
-                  <DisplayRoute routeData={routeData} origin={searchedOrigin} destination={searchedDestination}></DisplayRoute>
-            </div>
-
-            <p style={{ textAlign: 'center', fontSize: 11, color: '#aaa', marginTop: 8 }}>
-              scroll down for more
-            </p>
-            
-            </div>
           )}
 
         </div>
-
       </>
     )
-
 }
