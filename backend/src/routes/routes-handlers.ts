@@ -49,17 +49,18 @@ router.post('/create', async (req,res) => {
         const preference_set = await getUserPreferences(req.body.user_id)
 
         //Prioritize selections in frontend over stored preferences in db
-        const requestedMode = req.body.transportModes?.[0]?.transportMode //selections
+        const requestedModes = req.body.transportModes?.map((m: any) => m.transportMode) //selections
 
-                if (requestedMode) { //disregard stored preferences in db
+        console.log(requestedModes)
+                if (requestedModes && requestedModes.length > 0) { //disregard stored preferences in db
                     preference_set.delete('bus')
                     preference_set.delete('train')
 
                     //add back based on selection
-                    if (requestedMode === 'bus'){
+                    if (requestedModes.includes('bus')){
                         preference_set.add('bus')
                     }
-                    if (requestedMode === 'train'){
+                    if (requestedModes.includes('train')){
                         preference_set.add('train')
                     }
                 }

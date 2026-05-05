@@ -90,7 +90,7 @@ export async function getRoute(route_req : route, pref_set : any){
         numTripPatterns: route_req.numTripPatterns,
         wheelchairAccessible: pref_set.has('elevator') ? true : false,
         maxAccessEgressDurationForMode : [
-          {streetMode : 'foot', duration : '8m'}
+          {streetMode : 'foot', duration : '20m'}
         ]
       }
     })

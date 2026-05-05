@@ -56,9 +56,10 @@ export default function MainPG(){
   const [drawnRoute, setDrawnRoute] = useState<routeInfo[]>([]);
   const [originError, setOriginError] = useState(false)
   const [destinationError, setDestinationError] = useState(false)
-  const [selectedMode, setSelectedMode] = useState<'bus' | 'train' | null>(null)
+  const [selectedMode, setSelectedMode] = useState<'bus' | 'train' | 'both' | null>(null)
   const [busRoutePreview, setBusRoutePreview] = useState<routeInfo | null>(null)
   const [trainRoutePreview, setTrainRoutePreview] = useState<routeInfo | null>(null)
+  const [busAndTrainRoutePreview, setBusAndTrainRoutePreview] = useState<routeInfo | null>(null)
   const TrainAndBusMode = preferences.bus && preferences.train
     
   //create form and track input data upon submission
@@ -70,7 +71,11 @@ export default function MainPG(){
   } = useForm<destinationInput>({mode: "onSubmit",});
 
   //fetch route based on selected mode
-  const fetchRoute = async (origin: string, destination: string, mode: 'bus' | 'train') => {
+  const fetchRoute = async (origin: string, destination: string, mode: 'bus' | 'train' | 'both') => {
+      const transportModes = mode === 'both' 
+        ? [{ transportMode: 'bus' }, { transportMode: 'train' }]
+        : [{ transportMode: mode }]
+
       const rawResponse = await fetch('http://localhost:3000/routes/create', {
         method: 'POST',
         headers: {
@@ -81,7 +86,7 @@ export default function MainPG(){
           user_id: userId,
           origin,
           destination,
-          transportModes: [{ transportMode: mode }],
+          transportModes,
           numTripPatterns: 1
         })
       })
@@ -119,7 +124,7 @@ export default function MainPG(){
         setBusRoutePreview(null)
         setTrainRoutePreview(null)
 
-        const [busResult, trainResult] = await Promise.all([
+        const [busResult, trainResult, BusAndTrainResult] = await Promise.all([
           fetch('http://localhost:3000/routes/create', {
             method: 'POST',
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
@@ -130,6 +135,11 @@ export default function MainPG(){
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: userId, origin: data.origin, destination: data.destination, transportModes: [{ transportMode: 'train' }], numTripPatterns: 1 })
           }).then(r => r.json()),
+          fetch('http://localhost:3000/routes/create', {
+            method: 'POST',
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, origin: data.origin, destination: data.destination, transportModes: [{ transportMode: 'bus' }, { transportMode: 'train' }], numTripPatterns: 1 })
+          }).then(r => r.json()),
         ])
 
         //total trip time depending on mode of transport
@@ -138,6 +148,9 @@ export default function MainPG(){
         }
         if (!trainResult.error) {
           setTrainRoutePreview(trainResult[0])
+        }
+        if (!BusAndTrainResult.error){
+          setBusAndTrainRoutePreview(BusAndTrainResult[0])
         }
         return
       }
@@ -485,6 +498,18 @@ const lineLayer: Omit<LineLayerSpecification, 'source'> = {
                     )}
                   </button>
 
+                  <button 
+                    onClick={() => { setSelectedMode('both'); fetchRoute(searchedOrigin, searchedDestination, 'both') }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#1c7ed6', e.currentTarget.style.color = '#fff')}
+                    onMouseLeave={e => (e.currentTarget.style.background = '#fff', e.currentTarget.style.color = '#1c7ed6')}
+                    style={{ padding: '14px', borderRadius: 10, border: '2px solid #1c7ed6', background: '#fff', fontSize: 15, fontWeight: 600, color: '#1c7ed6', cursor: 'pointer' }}>
+                    BUS & TRAIN
+                    {busAndTrainRoutePreview && (
+                      <span style={{ display: 'block', fontSize: 12, fontWeight: 400, marginTop: 3 }}>
+                        {Math.floor(busAndTrainRoutePreview.duration/60)} min total
+                      </span>
+                    )}
+                  </button>
 
                 </div>
               ) : (
