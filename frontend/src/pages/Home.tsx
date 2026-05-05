@@ -57,6 +57,8 @@ export default function MainPG(){
   const [originError, setOriginError] = useState(false)
   const [destinationError, setDestinationError] = useState(false)
   const [selectedMode, setSelectedMode] = useState<'bus' | 'train' | null>(null)
+  const [busRoutePreview, setBusRoutePreview] = useState<routeInfo | null>(null)
+  const [trainRoutePreview, setTrainRoutePreview] = useState<routeInfo | null>(null)
   const TrainAndBusMode = preferences.bus && preferences.train
     
   //create form and track input data upon submission
@@ -113,8 +115,32 @@ export default function MainPG(){
       setShowSidebar(true)
 
       //both Train and Bus are selected - allow user to pick train or bus
-      if (TrainAndBusMode) 
+      if (TrainAndBusMode) {
+        setBusRoutePreview(null)
+        setTrainRoutePreview(null)
+
+        const [busResult, trainResult] = await Promise.all([
+          fetch('http://localhost:3000/routes/create', {
+            method: 'POST',
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, origin: data.origin, destination: data.destination, transportModes: [{ transportMode: 'bus' }], numTripPatterns: 1 })
+          }).then(r => r.json()),
+          fetch('http://localhost:3000/routes/create', {
+            method: 'POST',
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, origin: data.origin, destination: data.destination, transportModes: [{ transportMode: 'train' }], numTripPatterns: 1 })
+          }).then(r => r.json()),
+        ])
+
+        //total trip time depending on mode of transport
+        if (!busResult.error) {
+          setBusRoutePreview(busResult[0])
+        }
+        if (!trainResult.error) {
+          setTrainRoutePreview(trainResult[0])
+        }
         return
+      }
 
       //if only Train or bus, just display route data
       if (preferences.bus) {
@@ -439,15 +465,26 @@ const lineLayer: Omit<LineLayerSpecification, 'source'> = {
                     onMouseLeave={e => (e.currentTarget.style.background = '#fff', e.currentTarget.style.color = '#1c7ed6')}
                     style={{ padding: '14px', borderRadius: 10, border: '2px solid #1c7ed6', background: '#fff', fontSize: 15, fontWeight: 600, color: '#1c7ed6', cursor: 'pointer' }}>
                     BUS
+                    {busRoutePreview && (
+                      <span style={{ display: 'block', fontSize: 12, fontWeight: 400, marginTop: 3 }}>
+                        {Math.floor(busRoutePreview.duration/60)} min total
+                      </span>
+                    )}
                   </button>
 
                   <button 
                     onClick={() => { setSelectedMode('train'); fetchRoute(searchedOrigin, searchedDestination, 'train') }}
-                                        onMouseEnter={e => (e.currentTarget.style.background = '#1c7ed6', e.currentTarget.style.color = '#fff')}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#1c7ed6', e.currentTarget.style.color = '#fff')}
                     onMouseLeave={e => (e.currentTarget.style.background = '#fff', e.currentTarget.style.color = '#1c7ed6')}
                     style={{ padding: '14px', borderRadius: 10, border: '2px solid #1c7ed6', background: '#fff', fontSize: 15, fontWeight: 600, color: '#1c7ed6', cursor: 'pointer' }}>
                     TRAIN
+                    {trainRoutePreview && (
+                      <span style={{ display: 'block', fontSize: 12, fontWeight: 400, marginTop: 3 }}>
+                        {Math.floor(trainRoutePreview.duration/60)} min total
+                      </span>
+                    )}
                   </button>
+
 
                 </div>
               ) : (
