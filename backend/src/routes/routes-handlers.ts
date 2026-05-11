@@ -52,18 +52,19 @@ router.post('/create', async (req,res) => {
         const requestedModes = req.body.transportModes?.map((m: any) => m.transportMode) //selections
 
         console.log(requestedModes)
-                if (requestedModes && requestedModes.length > 0) { //disregard stored preferences in db
-                    preference_set.delete('bus')
-                    preference_set.delete('train')
+        
+        if (requestedModes && requestedModes.length > 0) { //disregard stored preferences in db
+            preference_set.delete('bus')
+            preference_set.delete('train')
 
-                    //add back based on selection
-                    if (requestedModes.includes('bus')){
-                        preference_set.add('bus')
-                    }
-                    if (requestedModes.includes('train')){
-                        preference_set.add('train')
-                    }
-                }
+            //add back based on selection
+            if (requestedModes.includes('bus')){
+                preference_set.add('bus')
+            }
+            if (requestedModes.includes('train')){
+                preference_set.add('train')
+            }
+        }
 
         //untrimmed
         const route = await getRoute(route_req,preference_set)
