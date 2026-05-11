@@ -76,7 +76,7 @@ export default function MainPG(){
         ? [{ transportMode: 'bus' }, { transportMode: 'train' }]
         : [{ transportMode: mode }]
 
-      const rawResponse = await fetch('http://localhost:3000/routes/create', {
+      const rawResponse = await fetch(`${import.meta.env.VITE_API_URL}/routes/create`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
