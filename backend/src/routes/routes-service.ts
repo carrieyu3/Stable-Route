@@ -96,6 +96,7 @@ export async function getRoute(route_req : route, pref_set : any){
     })
   })
   const response_body = await response.json()
+  console.log("OTP resp:", JSON.stringify(response_body))
   const tripPatterns = response_body["data"]["trip"]["tripPatterns"]
   if (!tripPatterns.length){
     throw new Error('No Patterns Constructed')
