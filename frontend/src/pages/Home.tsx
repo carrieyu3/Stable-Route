@@ -126,17 +126,17 @@ export default function MainPG(){
         setTrainRoutePreview(null)
 
         const [busResult, trainResult, BusAndTrainResult] = await Promise.all([
-          fetch('http://localhost:3000/routes/create', {
+          fetch(`${import.meta.env.VITE_API_URL}/routes/create`, {
             method: 'POST',
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: userId, origin: data.origin, destination: data.destination, transportModes: [{ transportMode: 'bus' }], numTripPatterns: 1 })
           }).then(r => r.json()),
-          fetch('http://localhost:3000/routes/create', {
+          fetch(`${import.meta.env.VITE_API_URL}/routes/create`, {
             method: 'POST',
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: userId, origin: data.origin, destination: data.destination, transportModes: [{ transportMode: 'train' }], numTripPatterns: 1 })
           }).then(r => r.json()),
-          fetch('http://localhost:3000/routes/create', {
+          fetch(`${import.meta.env.VITE_API_URL}/routes/create`, {
             method: 'POST',
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: userId, origin: data.origin, destination: data.destination, transportModes: [{ transportMode: 'bus' }, { transportMode: 'train' }], numTripPatterns: 1 })
