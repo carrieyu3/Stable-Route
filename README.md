@@ -9,8 +9,16 @@ Using OpenTripPlanner to create routes based on user preferences and MTA's GTFS 
 
 ### Technologies
 
-Frontend: React + Vite + TypeScript + Tailwind CSS
+**Frontend:** React + Vite + TypeScript + Tailwind CSS
 
-Backend: ExpressJS + TypeScript, OpenTripPlanner
+**Backend:** ExpressJS + TypeScript, OpenTripPlanner
 
-Database: PostgreSQL (GIS) + Supabase
+**Database:** PostgreSQL (GIS) + Supabase
+
+### Deployment
+
+**Frontend:** Vercel
+
+**Backend:** Render
+
+**OTP:** Google Cloud
